@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recordatorio Tributario</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: slideIn 0.8s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #ff9ff3 100%);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+
+        .header h1 {
+            color: white;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            color: rgba(255,255,255,0.9);
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .greeting {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .alert-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-left: 5px solid #ff6b6b;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(255,107,107,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .alert-box:hover {
+            transform: translateY(-2px);
+        }
+
+        .alert-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #c0392b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .alert-title::before {
+            content: "⚠️";
+            margin-right: 10px;
+            font-size: 24px;
+        }
+
+        .obligations-list {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid #28a745;
+        }
+
+        .obligations-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #155724;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .obligation-item {
+            background: white;
+            margin: 12px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .obligation-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,123,255,0.2);
+        }
+
+        .obligation-date {
+            font-weight: 700;
+            color: #dc3545;
+            font-size: 16px;
+        }
+
+        .obligation-desc {
+            color: #495057;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.6);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .footer-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .footer-contact {
+            font-size: 14px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .divider {
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            margin: 20px 0;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+
+            .content {
+                padding: 25px 20px;
+            }
+
+            .header {
+                padding: 25px 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="header">
+        <h1>Recordatorio Profesional</h1>
+        <p class="subtitle">Obligaciones tributarias para contadores públicos</p>
+    </div>
+
+    <div class="content">
+        <div class="greeting">
+            Estimado/a <span th:text="${name}">Usuario</span>! 🎉</h2>
+        </div>
+
+        <p style="color: #495057; line-height: 1.6; font-size: 16px;">
+            Como parte de nuestro compromiso profesional, le recordamos las próximas fechas importantes para el cumplimiento de las obligaciones tributarias que debe gestionar para sus clientes.
+        </p>
+
+        <div class="alert-box">
+            <div class="alert-title">Fechas Críticas para sus Clientes</div>
+            <p style="margin: 0; color: #721c24; font-size: 15px;">
+                Recuerde coordinar con sus clientes el cumplimiento oportuno de estas obligaciones para evitar sanciones.
+            </p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="obligations-list">
+            <div class="obligations-title">🗓️ Calendario de Obligaciones</div>
+
+            <div class="obligation-item">
+                <div class="obligation-date">📅 <span th:text="${fecha}">31 de Enero, 2024</span></p></div>
+                <div class="obligation-desc">Vencimiento IVA bimestral - Coordinar con clientes del régimen común</div>
+            </div>
+
+            <div class="obligation-item">
+                <div class="obligation-date">📅 31 de Enero, 2024</div>
+                <div class="obligation-desc">Retenciones en la fuente - Revisar y presentar por todos los clientes</div>
+            </div>
+
+            <div class="obligation-item">
+                <div class="obligation-date">📅 15 de Febrero, 2024</div>
+                <div class="obligation-desc">Renta Personas Jurídicas - Preparar declaraciones según último dígito NIT</div>
+            </div>
+
+            <div class="obligation-item">
+                <div class="obligation-date">📅 28 de Febrero, 2024</div>
+                <div class="obligation-desc">Información Exógena - Consolidar y presentar por cada cliente obligado</div>
+            </div>
+
+            <div class="obligation-item">
+                <div class="obligation-date">📅 15 de Marzo, 2024</div>
+                <div class="obligation-desc">Renovación Tarjeta Profesional - Verificar vigencia ante Junta Central</div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <a href="#" class="cta-button" onclick="event.preventDefault(); alert('Accediendo al sistema de gestión tributaria...');">
+                📋 Acceder al Sistema
+            </a>
+        </div>
+
+        <p style="color: #6c757d; font-size: 14px; line-height: 1.6; margin-top: 25px;">
+            <strong>Nota profesional:</strong> Este recordatorio se envía como apoyo a su gestión contable. Recuerde verificar las fechas específicas según el último dígito del NIT de cada cliente y mantener actualizada su documentación profesional.
+        </p>
+    </div>
+
+    <div class="footer">
+        <div class="footer-title">🤝 Colegio de Contadores Públicos</div>
+        <div class="footer-contact">
+            Sistema de Recordatorios Profesionales<br>
+            📧 info@colegiocontadores.org | ☎️ +57 (1) 345-6789<br>
+            🏢 Junta Central de Contadores - Bogotá, Colombia
+        </div>
+    </div>
+</div>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9870bc8e942a3ee6',t:'MTc1OTIwNDAyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

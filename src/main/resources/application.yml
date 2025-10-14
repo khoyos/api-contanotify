@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: contanotify
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/contanotify
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: lvillarrealcool@gmail.com
+    password: ${EMAIL_PASS_KEY}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        transport:
+          protocol: smtp
+  activemq:
+    broker-url: tcp://localhost:61616
+    user: ${USER_ACTIVE_MQ}
+    password: ${PASSWORD_ACTIVE_MQ}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: 18000000
+  #expiration-ms: 3600000   # 1 hora (puedes ajustar)
+
+twilio:
+  accountSid: ${TWILIO_ACCOUNT_SID}
+  authToken: ${TWILIO_AUTH_TOKEN}
+  phoneNumber: 14155238886 # N�mero sandbox de Twilio
+

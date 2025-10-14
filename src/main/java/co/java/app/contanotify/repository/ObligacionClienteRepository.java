@@ -1,0 +1,12 @@
+package co.java.app.contanotify.repository;
+
+import co.java.app.contanotify.model.ObligacionCliente;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+public interface ObligacionClienteRepository extends MongoRepository<ObligacionCliente,String> {
+    Optional<List<ObligacionCliente>> findByFecha(LocalDateTime date);
+}

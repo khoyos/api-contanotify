@@ -1,0 +1,199 @@
+package co.java.app.contanotify.service.impl;
+
+import co.java.app.contanotify.dto.ConfiguracionObligacionesDTO;
+import co.java.app.contanotify.dto.ObligacionClienteDTO;
+import co.java.app.contanotify.dto.ObligacionTableDTO;
+import co.java.app.contanotify.dto.UsuarioDTO;
+import co.java.app.contanotify.model.*;
+import co.java.app.contanotify.repository.*;
+import co.java.app.contanotify.service.IObligacionCliente;
+import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
+@Service
+public class ObligacionClienteImpl implements IObligacionCliente {
+
+    private static final Logger log = LoggerFactory.getLogger(ObligacionClienteImpl.class);
+    private final ObligacionClienteRepository obligacionClienteRepository;
+    private final ConfiguracionClienteRepository configuracionClienteRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final CalendarioRepository calendarioRepository;
+    private final ReminderProducer reminderProducer;
+    private final ConfiguracionObligacionesRepository configuracionObligacionesRepository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    public ObligacionClienteImpl(ObligacionClienteRepository obligacionClienteRepository,
+                                 ConfiguracionClienteRepository configuracionClienteRepository,
+                                 UsuarioRepository usuarioRepository,
+                                 CalendarioRepository calendarioRepository,
+                                 ReminderProducer reminderProducer,
+                                 ConfiguracionObligacionesRepository configuracionObligacionesRepository) {
+        this.obligacionClienteRepository = obligacionClienteRepository;
+        this.configuracionClienteRepository = configuracionClienteRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.calendarioRepository = calendarioRepository;
+        this.reminderProducer = reminderProducer;
+        this.configuracionObligacionesRepository = configuracionObligacionesRepository;
+    }
+
+    @Override
+    public Map<String, Object>  save(ObligacionClienteDTO obligacionClienteDTO) {
+
+        Optional<ConfiguracionCliente> configuracionCliente= configuracionClienteRepository.findByUsuarioClienteId(new ObjectId(obligacionClienteDTO.getUsuarioClienteId()));
+        if(!configuracionCliente.isPresent()|| configuracionCliente.isEmpty()){
+            new RuntimeException("Error al guardar la información");
+        }
+
+        Optional<Usuario> usuarioCliente = usuarioRepository.findById(obligacionClienteDTO.getUsuarioClienteId().toString());
+
+        if(!usuarioCliente.isPresent()||usuarioCliente.isEmpty()){
+            new RuntimeException("Error al guardar la información");
+        }
+
+        String documento = usuarioCliente.get().getDocumento();
+        String ultimoDigitoNit = String.valueOf(documento.charAt(documento.length() - 1));
+        String penultimosDigitosNit = String.valueOf(documento.charAt(documento.length() - 2));
+
+        String dosUltimosDigitosNit = penultimosDigitosNit+ultimoDigitoNit;
+
+        Optional<Calendario> calendario= calendarioRepository.findById(obligacionClienteDTO.getPagoId());
+
+        if(calendario.isEmpty()|| !calendario.isPresent()){
+            new RuntimeException("Error al guardar la información");
+        }
+
+
+            for(Fecha fecha: calendario.get().getFechas()){
+
+                if(fecha.getNit().contains("-")){
+                    //Registrar las fechas con respecto a la logica de los 2 nits
+                    String valor = fecha.getNit();
+                    String[] partes = valor.split("-");
+
+                    String primera = partes[0];
+                    String segunda = partes[1];
+
+                    if(primera.equals(dosUltimosDigitosNit)||segunda.equals(dosUltimosDigitosNit)){
+                        // registrar la fecha
+                        ObligacionCliente obligacionCliente = new ObligacionCliente();
+
+                        obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
+                        obligacionCliente.setCalendarioId(new ObjectId(calendario.get().getId()));
+                        obligacionCliente.setFecha(fecha.getFecha());
+
+                        obligacionClienteRepository.save(obligacionCliente);
+
+                        HashMap<String, Object> response = new HashMap<>();
+                        response.put("fecha", fecha.getFecha());
+
+                        return response;
+                    }
+                }else{
+                    //es de un solo nit
+                    if(ultimoDigitoNit.equals(fecha.getNit())){
+                        //registrar la fecha
+                        ObligacionCliente obligacionCliente = new ObligacionCliente();
+
+                        obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
+                        obligacionCliente.setCalendarioId(new ObjectId(calendario.get().getId()));
+                        obligacionCliente.setFecha(fecha.getFecha());
+
+                        obligacionClienteRepository.save(obligacionCliente);
+
+                        HashMap<String, Object> response = new HashMap<>();
+                        response.put("fecha", fecha.getFecha());
+
+                        return response;
+                    }
+                }
+            }
+
+        return new HashMap<>();
+    }
+
+    @Override
+    public Page<ObligacionTableDTO> getAll(Map<String, Object> filters, Pageable pageable) {
+        Query query = new Query().with(pageable);
+        List<Criteria> criterios = new ArrayList<>();
+
+        // Obtener valores de filtros (evita NPE)
+        String nombreCliente = (String) filters.getOrDefault("nombreCliente", "");
+        String entidad = (String) filters.getOrDefault("entidad", "");
+        String renta = (String) filters.getOrDefault("renta", "");
+        String pago = (String) filters.getOrDefault("pago", "");
+        String fecha = (String) filters.getOrDefault("fecha", "");
+
+        // 🔍 Agregar filtros dinámicos (regex = búsqueda parcial, 'i' = case insensitive)
+        if (!nombreCliente.isBlank()) {
+            criterios.add(Criteria.where("nombreCliente").regex(nombreCliente, "i"));
+        }
+        if (entidad != null && !entidad.isBlank()) {
+            criterios.add(Criteria.where("entidad").regex(entidad, "i"));
+        }
+        if (renta!=null && !renta.isBlank()) {
+            criterios.add(Criteria.where("renta").regex(renta, "i"));
+        }
+        if (pago!=null && !pago.isBlank()) {
+            criterios.add(Criteria.where("pago").regex(pago, "i"));
+        }
+        if (fecha!=null && !fecha.isBlank()) {
+            criterios.add(Criteria.where("fecha").regex(fecha, "i"));
+        }
+
+        // 🔹 Aplica todos los filtros si existen
+        if (!criterios.isEmpty()) {
+            query.addCriteria(new Criteria().andOperator(criterios.toArray(new Criteria[0])));
+        }
+
+        // 🔹 Ejecuta la consulta
+        List<ConfiguracionObligaciones> resultados = mongoTemplate.find(query, ConfiguracionObligaciones.class);
+
+        // 🔹 Conteo total para la paginación
+        long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), ConfiguracionObligaciones.class);
+
+        // Mapear la entidad al DTO manualmente
+        List<ObligacionTableDTO> dtos = resultados.stream().map(item -> {
+            ObligacionTableDTO dto = new ObligacionTableDTO();
+            dto.setId(item.getId());
+            dto.setNombreCliente(item.getNombreCliente());
+            dto.setEntidad(item.getEntidad());
+            dto.setRenta(item.getRenta());
+            dto.setPago(item.getPago());
+            dto.setFecha(item.getFecha());
+            return dto;
+        }).toList();
+
+        // 📦 Retorna la página final
+        return new PageImpl<>(dtos, pageable, total);
+    }
+
+    @Override
+    public void saveConfiguracionObligacion(ConfiguracionObligacionesDTO configuracionObligacionesDTO) {
+        ConfiguracionObligaciones configuracionObligaciones = new ConfiguracionObligaciones();
+
+        configuracionObligaciones.setUsuarioId(configuracionObligacionesDTO.getUsuarioId());
+        configuracionObligaciones.setClienteId(configuracionObligacionesDTO.getClienteId());
+        configuracionObligaciones.setNombreCliente(configuracionObligacionesDTO.getNombreCliente());
+        configuracionObligaciones.setEntidad(configuracionObligacionesDTO.getEntidad());
+        configuracionObligaciones.setRenta(configuracionObligacionesDTO.getRenta());
+        configuracionObligaciones.setPago(configuracionObligacionesDTO.getPago());
+        configuracionObligaciones.setFecha(configuracionObligacionesDTO.getFecha());
+
+        configuracionObligacionesRepository.save(configuracionObligaciones);
+    }
+
+}
