@@ -1,5 +1,6 @@
 package co.java.app.contanotify.service;
 
+import co.java.app.contanotify.dto.AlertasCriticasDTO;
 import co.java.app.contanotify.dto.ObligacionDTO;
 
 import java.util.List;
@@ -9,4 +10,5 @@ public interface IObligacion {
     Optional<ObligacionDTO> findByName(String name);
     void save(ObligacionDTO obligacionDTO);
     List<ObligacionDTO> findAll();
+    List<AlertasCriticasDTO> dashboard(String usuarioId);
 }

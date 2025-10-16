@@ -31,6 +31,22 @@ public class ConfigurarClienteImpl implements IConfiguracionCliente {
 
     @Override
     public Optional<Map<String,Object>> save(ConfigurarClienteDTO configurarClienteDTO) {
+
+        Optional<ConfiguracionCliente> responseConfiguracionCliente = configuracionClienteRepository.findByUsuarioIdAndUsuarioClienteId(new ObjectId(configurarClienteDTO.getUsuarioId()),
+                new ObjectId(configurarClienteDTO.getUsuarioClienteId()));
+
+        if(!responseConfiguracionCliente.isEmpty()){
+            Optional<Usuario> usuario=usuarioRepository.findById(configurarClienteDTO.getUsuarioId());
+            Optional<Usuario> cliente=usuarioRepository.findById(configurarClienteDTO.getUsuarioClienteId());
+
+            Map<String,Object> response = new HashMap<>();
+            response.put("contador",usuario.get().getNombre());
+            response.put("cliente",cliente.get().getNombre());
+            response.put("emailContador",usuario.get().getEmail());
+
+            return Optional.of(response);
+        }
+
         ConfiguracionCliente configurarCliente = new ConfiguracionCliente();
 
         configurarCliente.setUsuarioId(new ObjectId(configurarClienteDTO.getUsuarioId()));
@@ -52,10 +68,6 @@ public class ConfigurarClienteImpl implements IConfiguracionCliente {
         response.put("contador",usuario.get().getNombre());
         response.put("cliente",cliente.get().getNombre());
         response.put("emailContador",usuario.get().getEmail());
-
-        //TODO: Se debe construir servicio para enviar mensajes por whatsapp a que horas?
-        //TODO: Se debe construir servicio para enviar mesnajes cuantas veces al día
-        //TODO: Se debe constuir servicio para enviar mensaje con anticipación
 
         return Optional.of(response);
     }

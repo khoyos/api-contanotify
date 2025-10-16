@@ -5,11 +5,13 @@ public class ConfiguracionObligacionesDTO {
     private String id;
     private String usuarioId;
     private String clienteId;
+    private String identidadCliente;
     private String nombreCliente;
     private String entidad;
     private String renta;
     private String pago;
     private String fecha;
+    private String obligacionClienteId;
 
     public String getId() {
         return id;
@@ -75,4 +77,19 @@ public class ConfiguracionObligacionesDTO {
         this.fecha = fecha;
     }
 
+    public String getObligacionClienteId() {
+        return obligacionClienteId;
+    }
+
+    public void setObligacionClienteId(String obligacionClienteId) {
+        this.obligacionClienteId = obligacionClienteId;
+    }
+
+    public String getIdentidadCliente() {
+        return identidadCliente;
+    }
+
+    public void setIdentidadCliente(String identidadCliente) {
+        this.identidadCliente = identidadCliente;
+    }
 }

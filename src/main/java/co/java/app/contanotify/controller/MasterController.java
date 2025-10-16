@@ -10,6 +10,7 @@ import co.java.app.contanotify.service.impl.EntidadImpl;
 import co.java.app.contanotify.service.impl.ObligacionImpl;
 import co.java.app.contanotify.service.impl.TipoUsuarioImpl;
 import jakarta.validation.Valid;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -134,6 +135,16 @@ public class MasterController {
         return ResponseEntity.status(201).body(Map.of(
                 "message", "Se ha consultado obligaciones correctamente",
                 "obligaciones", obligaciones
+        ));
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<?> getDashboard(@RequestParam(required = true) String userId) {
+        List<AlertasCriticasDTO> obligaciones = iObligacion.dashboard(userId);
+
+        return ResponseEntity.status(201).body(Map.of(
+                "message", "Se ha consultado obligaciones correctamente",
+                "alertas", obligaciones
         ));
     }
 }

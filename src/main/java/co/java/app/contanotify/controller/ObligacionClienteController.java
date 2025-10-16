@@ -31,10 +31,12 @@ public class ObligacionClienteController {
         Map<String, Object> response = iObligacionCliente.save(req);
 
         String fecha = response.get("fecha").toString();
+        String obligacionClienteId = response.get("obligacionClienteId").toString();
 
         return ResponseEntity.status(201).body(Map.of(
                 "message", "La obligacion cliente se guardo con exito",
-                "fecha", fecha
+                "fecha", fecha,
+                "obligacionClienteId", obligacionClienteId
         ));
     }
 
@@ -53,6 +55,7 @@ public class ObligacionClienteController {
     public ResponseEntity<?> getObligaciones(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String identidadCliente,
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String entidad,
             @RequestParam(required = false) String renta,
@@ -61,7 +64,7 @@ public class ObligacionClienteController {
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by("nombre").ascending());
             Map<String, Object> filters = new HashMap<>();
-
+            filters.put("identidadCliente", identidadCliente);
             filters.put("nombre", nombre);
             filters.put("entidad", entidad);
             filters.put("renta", renta);

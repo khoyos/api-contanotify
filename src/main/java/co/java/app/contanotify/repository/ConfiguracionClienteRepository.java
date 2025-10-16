@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ConfiguracionClienteRepository extends MongoRepository<ConfiguracionCliente, String> {
     Optional<ConfiguracionCliente> findByUsuarioId(String id);
     Optional<ConfiguracionCliente> findByUsuarioClienteId(ObjectId id);
+    Optional<ConfiguracionCliente> findByUsuarioIdAndUsuarioClienteId(ObjectId usuarioId, ObjectId clienteId);
 }

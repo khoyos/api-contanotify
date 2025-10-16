@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface ObligacionRepository extends MongoRepository<Obligacion, String> {
     Optional<Obligacion> findByName(String name);
+
 }

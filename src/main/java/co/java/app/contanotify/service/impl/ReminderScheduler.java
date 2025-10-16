@@ -37,8 +37,8 @@ public class ReminderScheduler {
     }
 
     // Se ejecuta todos los días a las 8am
-    //@Scheduled(fixedRate = 60000)
-    @Scheduled(cron = "0 0 8 * * ?")
+    //@Scheduled(cron = "0 0 8 * * ?")
+    @Scheduled(fixedRate = 60000)
     public void scheduleReminders() {
         LocalDate today = LocalDate.now();
         System.out.println("* scheduleReminders plus 5 días = "+ today.plusDays(5));

@@ -95,10 +95,11 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                         obligacionCliente.setCalendarioId(new ObjectId(calendario.get().getId()));
                         obligacionCliente.setFecha(fecha.getFecha());
 
-                        obligacionClienteRepository.save(obligacionCliente);
+                        obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
 
                         HashMap<String, Object> response = new HashMap<>();
                         response.put("fecha", fecha.getFecha());
+                        response.put("obligacionClienteId", obligacionCliente.getId());
 
                         return response;
                     }
@@ -112,10 +113,11 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                         obligacionCliente.setCalendarioId(new ObjectId(calendario.get().getId()));
                         obligacionCliente.setFecha(fecha.getFecha());
 
-                        obligacionClienteRepository.save(obligacionCliente);
+                        obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
 
                         HashMap<String, Object> response = new HashMap<>();
                         response.put("fecha", fecha.getFecha());
+                        response.put("obligacionClienteId", obligacionCliente.getId());
 
                         return response;
                     }
@@ -131,15 +133,20 @@ public class ObligacionClienteImpl implements IObligacionCliente {
         List<Criteria> criterios = new ArrayList<>();
 
         // Obtener valores de filtros (evita NPE)
-        String nombreCliente = (String) filters.getOrDefault("nombreCliente", "");
+        String identidad = (String) filters.getOrDefault("identidadCliente", "");
+        String nombre = (String) filters.getOrDefault("nombre", "");
         String entidad = (String) filters.getOrDefault("entidad", "");
         String renta = (String) filters.getOrDefault("renta", "");
         String pago = (String) filters.getOrDefault("pago", "");
         String fecha = (String) filters.getOrDefault("fecha", "");
 
         // 🔍 Agregar filtros dinámicos (regex = búsqueda parcial, 'i' = case insensitive)
-        if (!nombreCliente.isBlank()) {
-            criterios.add(Criteria.where("nombreCliente").regex(nombreCliente, "i"));
+
+        if (identidad!=null && !identidad.isBlank()) {
+            criterios.add(Criteria.where("identidadCliente").regex(identidad, "i"));
+        }
+        if (nombre!=null && !nombre.isBlank()) {
+            criterios.add(Criteria.where("nombreCliente").regex(nombre, "i"));
         }
         if (entidad != null && !entidad.isBlank()) {
             criterios.add(Criteria.where("entidad").regex(entidad, "i"));
@@ -154,21 +161,22 @@ public class ObligacionClienteImpl implements IObligacionCliente {
             criterios.add(Criteria.where("fecha").regex(fecha, "i"));
         }
 
-        // 🔹 Aplica todos los filtros si existen
+        // Aplica todos los filtros si existen
         if (!criterios.isEmpty()) {
             query.addCriteria(new Criteria().andOperator(criterios.toArray(new Criteria[0])));
         }
 
-        // 🔹 Ejecuta la consulta
+        //  Ejecuta la consulta
         List<ConfiguracionObligaciones> resultados = mongoTemplate.find(query, ConfiguracionObligaciones.class);
 
-        // 🔹 Conteo total para la paginación
+        //  Conteo total para la paginación
         long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), ConfiguracionObligaciones.class);
 
         // Mapear la entidad al DTO manualmente
         List<ObligacionTableDTO> dtos = resultados.stream().map(item -> {
             ObligacionTableDTO dto = new ObligacionTableDTO();
             dto.setId(item.getId());
+            dto.setIdentidadCliente(item.getIdentidadCliente());
             dto.setNombreCliente(item.getNombreCliente());
             dto.setEntidad(item.getEntidad());
             dto.setRenta(item.getRenta());
@@ -177,7 +185,7 @@ public class ObligacionClienteImpl implements IObligacionCliente {
             return dto;
         }).toList();
 
-        // 📦 Retorna la página final
+        // Retorna la página final
         return new PageImpl<>(dtos, pageable, total);
     }
 
@@ -187,11 +195,13 @@ public class ObligacionClienteImpl implements IObligacionCliente {
 
         configuracionObligaciones.setUsuarioId(configuracionObligacionesDTO.getUsuarioId());
         configuracionObligaciones.setClienteId(configuracionObligacionesDTO.getClienteId());
+        configuracionObligaciones.setIdentidadCliente(configuracionObligacionesDTO.getIdentidadCliente());
         configuracionObligaciones.setNombreCliente(configuracionObligacionesDTO.getNombreCliente());
         configuracionObligaciones.setEntidad(configuracionObligacionesDTO.getEntidad());
         configuracionObligaciones.setRenta(configuracionObligacionesDTO.getRenta());
         configuracionObligaciones.setPago(configuracionObligacionesDTO.getPago());
         configuracionObligaciones.setFecha(configuracionObligacionesDTO.getFecha());
+        configuracionObligaciones.setObligacionClienteId(configuracionObligacionesDTO.getObligacionClienteId());
 
         configuracionObligacionesRepository.save(configuracionObligaciones);
     }
