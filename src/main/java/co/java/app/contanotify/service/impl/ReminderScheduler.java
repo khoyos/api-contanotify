@@ -41,7 +41,7 @@ public class ReminderScheduler {
     @Scheduled(fixedRate = 60000)
     public void scheduleReminders() {
         LocalDate today = LocalDate.now();
-        System.out.println("* scheduleReminders plus 5 días = "+ today.plusDays(5));
+        System.out.println("* scheduleReminders leyendo cola");
 
         // Buscar tareas para 5 días adelante
         processRemindersPlusDays(today.plusDays(5),5);
@@ -52,7 +52,8 @@ public class ReminderScheduler {
         // Buscar tareas para 1 día adelante
         processRemindersPlusDays(today.plusDays(1), 1);
 
-        //processRemindersPlusDays(today);
+        // Buscar tareas para hoy
+        processRemindersPlusDays(today,0);
 
     }
 
@@ -73,16 +74,29 @@ public class ReminderScheduler {
                 sendReminders(obligacionDelCliente, 5);
                 obligacionDelCliente.setReminder5DaysSent(true);
                 obligacionClienteRepository.save(obligacionDelCliente);
+
+                System.out.println("* Se ejecuto recordar 5 días antes envio email y se guardo obligacion cliente");
             } else if (daysToAdd == 3 && !obligacionDelCliente.isReminder3DaysSent()) {
                 // Buscar tareas para 3 días adelante
                 sendReminders(obligacionDelCliente, 3);
                 obligacionDelCliente.setReminder3DaysSent(true);
                 obligacionClienteRepository.save(obligacionDelCliente);
+
+                System.out.println("* Se ejecuto recordar 3 días antes envio email y se guardo obligacion cliente");
             } else if (daysToAdd == 1 && !obligacionDelCliente.isReminder1DaySent()) {
                 // Buscar tareas para 1 día adelante
                 sendReminders(obligacionDelCliente, 1);
                 obligacionDelCliente.setReminder1DaySent(true);
                 obligacionClienteRepository.save(obligacionDelCliente);
+
+                System.out.println("* Se ejecuto recordar 1 días antes envio email y se guardo obligacion cliente");
+            }else if (daysToAdd == 0 && !obligacionDelCliente.isReminderToDaySent()) {
+                // Buscar tareas para 1 día adelante
+                sendReminders(obligacionDelCliente, 0);
+                obligacionDelCliente.setReminderToDaySent(true);
+                obligacionClienteRepository.save(obligacionDelCliente);
+
+                System.out.println("* Se ejecuto recordar hoy días antes envio email y se guardo obligacion cliente");
             }
 
         }
@@ -92,17 +106,47 @@ public class ReminderScheduler {
        Optional<Calendario> calendario = calendarioRepository.findById(String.valueOf(obligacionCliente.getCalendarioId()));
        Optional<ConfiguracionCliente> configuracionCliente = configuracionClienteRepository.findById(obligacionCliente.getConfiguracionClienteId().toString());
        Optional<Usuario> usuarioCliente = usuarioRepository.findById(String.valueOf(configuracionCliente.get().getUsuarioClienteId()));
-       String msg = "Recordatorio: " + calendario.get().getNombre() + " vence el " + obligacionCliente.getFecha();
+        Optional<Usuario> usuarioContador = usuarioRepository.findById(String.valueOf(configuracionCliente.get().getUsuarioId()));
 
-       Map<String, Object> request = new HashMap<>();
+       boolean isNotificarCliente = configuracionCliente.get().isNotificarCliente();
+       boolean isNotificarContador = configuracionCliente.get().isNotificarContador();
 
-       request.put("to", usuarioCliente.get().getEmail());
-       request.put("message", msg);
-       request.put("name", usuarioCliente.get().getNombre());
-       request.put("fecha", obligacionCliente.getFecha());
-       request.put("dias", days);
+       if(isNotificarCliente){
+           Map<String, Object> request = new HashMap<>();
 
-       reminderProducer.sendReminder(request, days);
+           String msg = "Recordatorio: " + calendario.get().getNombre() + " vence el " + obligacionCliente.getFecha();
+
+           request.put("to", usuarioCliente.get().getEmail());
+           request.put("message", msg);
+           request.put("name", usuarioCliente.get().getNombre());
+           request.put("fecha", obligacionCliente.getFecha());
+           if(days == 0){
+               request.put("hoy", "Hoy es el día");
+           }else{
+               request.put("dias", days);
+           }
+
+           reminderProducer.sendReminder(request, days);
+       }
+
+        if(isNotificarContador){
+            Map<String, Object> request = new HashMap<>();
+
+            String msg = "Recordatorio: " + calendario.get().getNombre() + " vence el " + obligacionCliente.getFecha();
+
+            request.put("to", usuarioContador.get().getEmail());
+            request.put("message", msg);
+            request.put("name", usuarioContador.get().getNombre());
+            request.put("fecha", obligacionCliente.getFecha());
+
+            if(days == 0){
+                request.put("hoy", "Hoy es el día");
+            }else{
+                request.put("dias", days);
+            }
+
+            reminderProducer.sendReminder(request, days);
+        }
 
     }
 

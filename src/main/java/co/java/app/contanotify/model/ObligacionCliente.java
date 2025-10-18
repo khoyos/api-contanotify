@@ -16,6 +16,7 @@ public class ObligacionCliente {
     private boolean reminder5DaysSent = false;
     private boolean reminder3DaysSent = false;
     private boolean reminder1DaySent = false;
+    private boolean reminderToDaySent = false;
 
     public String getId() {
         return id;
@@ -72,4 +73,8 @@ public class ObligacionCliente {
     public void setReminder1DaySent(boolean reminder1DaySent) {
         this.reminder1DaySent = reminder1DaySent;
     }
+
+    public boolean isReminderToDaySent() {return reminderToDaySent;}
+
+    public void setReminderToDaySent(boolean reminderToDaySent) {this.reminderToDaySent = reminderToDaySent;}
 }

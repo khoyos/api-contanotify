@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class WhatsAppTwilioService {
 
-    @Value("${twilio.accountSid}")
+    /*@Value("${twilio.accountSid}")
     private String accountSid;
 
     @Value("${twilio.authToken}")
@@ -27,5 +27,5 @@ public class WhatsAppTwilioService {
         ).create();
 
         System.out.println("Mensaje enviado con SID: " + message.getSid());
-    }
+    }*/
 }

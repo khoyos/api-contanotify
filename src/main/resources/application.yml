@@ -28,8 +28,3 @@ jwt:
   expiration-ms: 18000000
   #expiration-ms: 3600000   # 1 hora (puedes ajustar)
 
-twilio:
-  accountSid: ${TWILIO_ACCOUNT_SID}
-  authToken: ${TWILIO_AUTH_TOKEN}
-  phoneNumber: 14155238886 # N�mero sandbox de Twilio
-

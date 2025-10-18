@@ -37,13 +37,20 @@ public class ReminderConsumers {
         sendEmail(map);
     }
 
+    @JmsListener(destination = "reminder-today")
+    public void processTodayReminder(String payload) {
+        System.out.println("[Hoy] Enviando recordatorio: " + payload.replace("{","").replace("}",""));
+        Map<String, String> map = getStringToMap(payload.replace("{","").replace("}",""));
+        sendEmail(map);
+    }
+
     private void sendEmail(Map<String,String> payload){
         System.out.println("payload: "+ payload);
         try {
             Map<String, Object> variables = new HashMap<>();
             variables.put("name",payload.get("name"));
             variables.put("fecha",payload.get("fecha"));
-            emailSender.sendHtmlEmail(payload.get("to"),"Contanotify te recuerda estar pendiente a tu obligación","remember-obligation",variables);
+            emailSender.sendHtmlEmail(payload.get("to"),"Contanotify te recuerda estar pendiente de tus obligaciones tributarias","remember-obligation",variables);
         } catch (MessagingException e) {
             throw new RuntimeException(e);
         }
