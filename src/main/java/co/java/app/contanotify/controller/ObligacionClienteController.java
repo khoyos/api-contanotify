@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -28,15 +29,15 @@ public class ObligacionClienteController {
     @PostMapping("/register")
     public ResponseEntity<?> obligacionClienteRegister(@RequestBody @Valid ObligacionClienteDTO req) {
 
-        Map<String, Object> response = iObligacionCliente.save(req);
+        List<Map<String, Object>> responses = iObligacionCliente.save(req);
 
-        String fecha = response.get("fecha").toString();
-        String obligacionClienteId = response.get("obligacionClienteId").toString();
+
+        /*String fecha = response.get("fecha").toString();
+        String obligacionClienteId = response.get("obligacionClienteId").toString();*/
 
         return ResponseEntity.status(201).body(Map.of(
                 "message", "La obligacion cliente se guardo con exito",
-                "fecha", fecha,
-                "obligacionClienteId", obligacionClienteId
+                "pagos", responses
         ));
     }
 

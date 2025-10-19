@@ -88,7 +88,7 @@ public class ObligacionImpl implements IObligacion {
             Optional<ObligacionCliente> response = obligacionClienteRepository.findById(co.getObligacionClienteId());
             AlertasCriticasDTO alertasCriticasDTO = new AlertasCriticasDTO();
 
-            DateTimeFormatter formateador = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+            DateTimeFormatter formateador = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
             LocalDate fecha = LocalDate.parse(co.getFecha(), formateador);
 
             alertasCriticasDTO.setFechaVencimiento(co.getFecha());

@@ -32,6 +32,7 @@ public class ObligacionClienteImpl implements IObligacionCliente {
     private final CalendarioRepository calendarioRepository;
     private final ReminderProducer reminderProducer;
     private final ConfiguracionObligacionesRepository configuracionObligacionesRepository;
+    private final ObligacionRepository obligacionRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -41,17 +42,19 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                                  UsuarioRepository usuarioRepository,
                                  CalendarioRepository calendarioRepository,
                                  ReminderProducer reminderProducer,
-                                 ConfiguracionObligacionesRepository configuracionObligacionesRepository) {
+                                 ConfiguracionObligacionesRepository configuracionObligacionesRepository,
+                                 ObligacionRepository obligacionRepository) {
         this.obligacionClienteRepository = obligacionClienteRepository;
         this.configuracionClienteRepository = configuracionClienteRepository;
         this.usuarioRepository = usuarioRepository;
         this.calendarioRepository = calendarioRepository;
         this.reminderProducer = reminderProducer;
         this.configuracionObligacionesRepository = configuracionObligacionesRepository;
+        this.obligacionRepository = obligacionRepository;
     }
 
     @Override
-    public Map<String, Object>  save(ObligacionClienteDTO obligacionClienteDTO) {
+    public List<Map<String, Object>>  save(ObligacionClienteDTO obligacionClienteDTO) {
 
         Optional<ConfiguracionCliente> configuracionCliente= configuracionClienteRepository.findByUsuarioClienteId(new ObjectId(obligacionClienteDTO.getUsuarioClienteId()));
         if(!configuracionCliente.isPresent()|| configuracionCliente.isEmpty()){
@@ -70,14 +73,18 @@ public class ObligacionClienteImpl implements IObligacionCliente {
 
         String dosUltimosDigitosNit = penultimosDigitosNit+ultimoDigitoNit;
 
-        Optional<Calendario> calendario= calendarioRepository.findById(obligacionClienteDTO.getPagoId());
 
-        if(calendario.isEmpty()|| !calendario.isPresent()){
+        Optional<List<Calendario>> calendarios= calendarioRepository.findByObligacionId(obligacionClienteDTO.getObligacionRentaId());
+
+        if(calendarios.isEmpty()|| !calendarios.isPresent()){
             new RuntimeException("Error al guardar la información");
         }
 
+        List<Map<String, Object>> responses = new ArrayList<>();
 
-            for(Fecha fecha: calendario.get().getFechas()){
+        for(Calendario calendario:  calendarios.get()){
+            Optional<Obligacion> obligacion = obligacionRepository.findById(calendario.getObligacionId());
+            for(Fecha fecha: calendario.getFechas()){
 
                 if(fecha.getNit().contains("-")){
                     //Registrar las fechas con respecto a la logica de los 2 nits
@@ -92,7 +99,7 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                         ObligacionCliente obligacionCliente = new ObligacionCliente();
 
                         obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
-                        obligacionCliente.setCalendarioId(new ObjectId(calendario.get().getId()));
+                        obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
                         obligacionCliente.setFecha(fecha.getFecha());
 
                         obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
@@ -100,8 +107,10 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                         HashMap<String, Object> response = new HashMap<>();
                         response.put("fecha", fecha.getFecha());
                         response.put("obligacionClienteId", obligacionCliente.getId());
+                        response.put("nombrePago", calendario.getNombre());
 
-                        return response;
+                        responses.add(response);
+
                     }
                 }else{
                     //es de un solo nit
@@ -110,7 +119,7 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                         ObligacionCliente obligacionCliente = new ObligacionCliente();
 
                         obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
-                        obligacionCliente.setCalendarioId(new ObjectId(calendario.get().getId()));
+                        obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
                         obligacionCliente.setFecha(fecha.getFecha());
 
                         obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
@@ -118,13 +127,17 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                         HashMap<String, Object> response = new HashMap<>();
                         response.put("fecha", fecha.getFecha());
                         response.put("obligacionClienteId", obligacionCliente.getId());
+                        response.put("nombrePago", calendario.getNombre());
 
-                        return response;
+                        responses.add(response);
+
                     }
                 }
             }
+        }
 
-        return new HashMap<>();
+
+        return responses;
     }
 
     @Override
