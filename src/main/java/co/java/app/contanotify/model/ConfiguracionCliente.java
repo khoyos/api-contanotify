@@ -4,10 +4,13 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.UUID;
+
 @Document(collection = "configuraciones_clientes")
 public class ConfiguracionCliente {
     @Id
     private String id;
+    private UUID publicId;
     private ObjectId usuarioId;
     private ObjectId usuarioClienteId;
     private ObjectId entidadId;
@@ -88,4 +91,8 @@ public class ConfiguracionCliente {
     public void setNotificarSms(boolean notificarSms) {
         this.notificarSms = notificarSms;
     }
+
+    public UUID getPublicId() {return publicId;}
+
+    public void setPublicId(UUID publicId) {this.publicId = publicId;}
 }

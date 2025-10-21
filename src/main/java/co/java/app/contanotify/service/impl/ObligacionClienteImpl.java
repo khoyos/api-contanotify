@@ -102,11 +102,12 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                         obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
                         obligacionCliente.setFecha(fecha.getFecha());
 
+                        obligacionCliente.setPublicId(UUID.randomUUID());
                         obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
 
                         HashMap<String, Object> response = new HashMap<>();
                         response.put("fecha", fecha.getFecha());
-                        response.put("obligacionClienteId", obligacionCliente.getId());
+                        response.put("obligacionClienteId", obligacionCliente.getPublicId());
                         response.put("nombrePago", calendario.getNombre());
 
                         responses.add(response);
@@ -122,11 +123,12 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                         obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
                         obligacionCliente.setFecha(fecha.getFecha());
 
+                        obligacionCliente.setPublicId(UUID.randomUUID());
                         obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
 
                         HashMap<String, Object> response = new HashMap<>();
                         response.put("fecha", fecha.getFecha());
-                        response.put("obligacionClienteId", obligacionCliente.getId());
+                        response.put("obligacionClienteId", obligacionCliente.getPublicId());
                         response.put("nombrePago", calendario.getNombre());
 
                         responses.add(response);
@@ -188,7 +190,7 @@ public class ObligacionClienteImpl implements IObligacionCliente {
         // Mapear la entidad al DTO manualmente
         List<ObligacionTableDTO> dtos = resultados.stream().map(item -> {
             ObligacionTableDTO dto = new ObligacionTableDTO();
-            dto.setId(item.getId());
+            dto.setId(item.getPublicId().toString());
             dto.setIdentidadCliente(item.getIdentidadCliente());
             dto.setNombreCliente(item.getNombreCliente());
             dto.setEntidad(item.getEntidad());
@@ -216,6 +218,7 @@ public class ObligacionClienteImpl implements IObligacionCliente {
         configuracionObligaciones.setFecha(configuracionObligacionesDTO.getFecha());
         configuracionObligaciones.setObligacionClienteId(configuracionObligacionesDTO.getObligacionClienteId());
 
+        configuracionObligaciones.setPublicId(UUID.randomUUID());
         configuracionObligacionesRepository.save(configuracionObligaciones);
     }
 

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class TipoUsuarioImpl implements ITipoUsuario {
@@ -27,7 +28,7 @@ public class TipoUsuarioImpl implements ITipoUsuario {
         }
         TipoUsuarioDTO tipoUsuarioDTO = new TipoUsuarioDTO();
 
-        tipoUsuarioDTO.setId(tipoUsuario.get().getId());
+        tipoUsuarioDTO.setId(tipoUsuario.get().getPublicId().toString());
         tipoUsuarioDTO.setName(tipoUsuario.get().getName());
 
         return Optional.of(tipoUsuarioDTO);
@@ -39,6 +40,7 @@ public class TipoUsuarioImpl implements ITipoUsuario {
         tipoUsuario.setName(tipoUsuarioDTO.getName().toLowerCase());
         tipoUsuario.setState(true);
 
+        tipoUsuario.setPublicId(UUID.randomUUID());
         tipoUsuarioRepository.save(tipoUsuario);
 
     }

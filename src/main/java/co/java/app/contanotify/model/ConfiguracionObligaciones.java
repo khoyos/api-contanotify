@@ -3,11 +3,14 @@ package co.java.app.contanotify.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.UUID;
+
 @Document(collection = "configuracion_obligaciones")
 public class ConfiguracionObligaciones {
 
     @Id
     private String id;
+    private UUID publicId;
     private String usuarioId;
     private String clienteId;
     private String identidadCliente;
@@ -94,7 +97,9 @@ public class ConfiguracionObligaciones {
         return identidadCliente;
     }
 
-    public void setIdentidadCliente(String identidadCliente) {
-        this.identidadCliente = identidadCliente;
-    }
+    public void setIdentidadCliente(String identidadCliente) {this.identidadCliente = identidadCliente;}
+
+    public UUID getPublicId() { return publicId;}
+
+    public void setPublicId(UUID publicId) { this.publicId = publicId;}
 }

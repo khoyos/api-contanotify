@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ConfigurarClienteImpl implements IConfiguracionCliente {
@@ -36,8 +37,8 @@ public class ConfigurarClienteImpl implements IConfiguracionCliente {
                 new ObjectId(configurarClienteDTO.getUsuarioClienteId()));
 
         if(!responseConfiguracionCliente.isEmpty()){
-            Optional<Usuario> usuario=usuarioRepository.findById(configurarClienteDTO.getUsuarioId());
-            Optional<Usuario> cliente=usuarioRepository.findById(configurarClienteDTO.getUsuarioClienteId());
+            Optional<Usuario> usuario=usuarioRepository.findByPublicId(UUID.fromString(configurarClienteDTO.getUsuarioId()));
+            Optional<Usuario> cliente=usuarioRepository.findByPublicId(UUID.fromString(configurarClienteDTO.getUsuarioClienteId()));
 
             Map<String,Object> response = new HashMap<>();
             response.put("contador",usuario.get().getNombre());
@@ -59,10 +60,11 @@ public class ConfigurarClienteImpl implements IConfiguracionCliente {
         configurarCliente.setNotificarWhatsapp(configurarClienteDTO.isNotificarWhatsapp());
         configurarCliente.setNotificarSms(configurarClienteDTO.isNotificarSms());
 
+        configurarCliente.setPublicId(UUID.randomUUID());
         configuracionClienteRepository.save(configurarCliente);
 
-        Optional<Usuario> usuario=usuarioRepository.findById(configurarClienteDTO.getUsuarioId());
-        Optional<Usuario> cliente=usuarioRepository.findById(configurarClienteDTO.getUsuarioClienteId());
+        Optional<Usuario> usuario=usuarioRepository.findByPublicId(UUID.fromString(configurarClienteDTO.getUsuarioId()));
+        Optional<Usuario> cliente=usuarioRepository.findByPublicId(UUID.fromString(configurarClienteDTO.getUsuarioClienteId()));
 
         Map<String,Object> response = new HashMap<>();
         response.put("contador",usuario.get().getNombre());

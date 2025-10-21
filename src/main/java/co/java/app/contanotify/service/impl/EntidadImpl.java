@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class EntidadImpl implements IEntidad {
@@ -42,6 +43,7 @@ public class EntidadImpl implements IEntidad {
         entidad.setName(entidadDTO.getName().toLowerCase());
         entidad.setState(true);
 
+        entidad.setPublicId(UUID.randomUUID());
         entidadRepository.save(entidad);
     }
 
@@ -56,7 +58,7 @@ public class EntidadImpl implements IEntidad {
 
             for (Entidad entidad : entidades) {
                 EntidadDTO dto = new EntidadDTO();
-                dto.setId(entidad.getId());
+                dto.setId(entidad.getPublicId().toString());
                 dto.setName(entidad.getName());
                 listaDto.add(dto);
             }

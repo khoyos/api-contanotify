@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class ReminderScheduler {
@@ -73,6 +70,8 @@ public class ReminderScheduler {
                 // Buscar tareas para 5 días adelante
                 sendReminders(obligacionDelCliente, 5);
                 obligacionDelCliente.setReminder5DaysSent(true);
+
+                obligacionDelCliente.setPublicId(UUID.randomUUID());
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar 5 días antes envio email y se guardo obligacion cliente");
@@ -80,6 +79,8 @@ public class ReminderScheduler {
                 // Buscar tareas para 3 días adelante
                 sendReminders(obligacionDelCliente, 3);
                 obligacionDelCliente.setReminder3DaysSent(true);
+
+                obligacionDelCliente.setPublicId(UUID.randomUUID());
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar 3 días antes envio email y se guardo obligacion cliente");
@@ -87,6 +88,8 @@ public class ReminderScheduler {
                 // Buscar tareas para 1 día adelante
                 sendReminders(obligacionDelCliente, 1);
                 obligacionDelCliente.setReminder1DaySent(true);
+
+                obligacionDelCliente.setPublicId(UUID.randomUUID());
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar 1 días antes envio email y se guardo obligacion cliente");
@@ -94,6 +97,8 @@ public class ReminderScheduler {
                 // Buscar tareas para 1 día adelante
                 sendReminders(obligacionDelCliente, 0);
                 obligacionDelCliente.setReminderToDaySent(true);
+
+                obligacionDelCliente.setPublicId(UUID.randomUUID());
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar hoy días antes envio email y se guardo obligacion cliente");

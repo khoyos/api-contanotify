@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl {
@@ -35,6 +36,8 @@ public class UserServiceImpl {
             user.setLockUntil(until);
             user.setFallos(0);
         }
+
+        user.setPublicId(UUID.randomUUID());
         repo.save(user);
     }
 
@@ -42,6 +45,8 @@ public class UserServiceImpl {
         user.setFallos(0);
         user.setBloqueo(0);
         user.setLockUntil(null);
+
+        user.setPublicId(UUID.randomUUID());
         repo.save(user);
     }
 }

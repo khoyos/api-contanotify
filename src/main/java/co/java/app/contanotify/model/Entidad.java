@@ -3,11 +3,14 @@ package co.java.app.contanotify.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.UUID;
+
 @Document(collection = "entidades")
 public class Entidad {
 
     @Id
     private String id;
+    private UUID publicId;
     private String name;
     private boolean state;
 
@@ -34,4 +37,8 @@ public class Entidad {
     public void setState(boolean state) {
         this.state = state;
     }
+
+    public UUID getPublicId() { return publicId; }
+
+    public void setPublicId(UUID publicId) { this.publicId = publicId; }
 }

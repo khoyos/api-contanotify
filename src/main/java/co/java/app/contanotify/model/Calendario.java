@@ -5,12 +5,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Document(collection = "calendarios")
 public class Calendario {
 
     @Id
     private String id;
+
+    private UUID publicId; // UUID público
 
     private String nombre;
 
@@ -63,8 +66,8 @@ public class Calendario {
     public List<Fecha> getFechas() {
         return fechas;
     }
-    public void setFechas(List<Fecha> fechas) {
-        this.fechas = fechas;
-    }
+    public void setFechas(List<Fecha> fechas) {this.fechas = fechas;}
+    public UUID getPublicId() {return publicId;}
+    public void setPublicId(UUID publicId) {this.publicId = publicId;}
 
 }

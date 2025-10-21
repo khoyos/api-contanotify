@@ -40,7 +40,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
         var userOpt = repo.findByEmail(req.getEmail());
-        if (userOpt.isEmpty()) return ResponseEntity.status(401).body(Map.of("error","Credenciales inválidas"));
+        if (userOpt.isEmpty()) return ResponseEntity.status(401).body(Map.of("error","Usuario o contraseña inválidos."));
 
         Usuario user = userOpt.get();
         // bloqueo vigente?
@@ -50,7 +50,7 @@ public class AuthController {
 
         if (!encoder.matches(req.getPassword(), user.getPassword())) {
             userService.recordFailedAttempt(user);
-            return ResponseEntity.status(401).body(Map.of("error","Credenciales inválidas"));
+            return ResponseEntity.status(401).body(Map.of("error","Usuario o contraseña inválidos."));
         }
 
         // login correcto
@@ -97,20 +97,21 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest req) {
+        req.getNombre();
         if (repo.findByEmail(req.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "El email ya está registrado"));
         }
 
         Usuario u = new Usuario();
         u.setEmail(req.getEmail());
-        u.setNombre(req.getName());
+        u.setNombre(req.getNombre());
         u.setPassword(encoder.encode(req.getPassword()));
-        u.setTipoDocumento(req.getTipoDocumento().toLowerCase());
-        u.setDocumento(req.getNumeroDocumento());
-        u.setTelefono(req.getTelefono());
+        u.setTipoDocumento("cedula");
+        u.setDocumento("");
+        u.setTelefono("");
         u.setActive(true);
 
-        String TIPO_USUARIO = req.getTipoUsuario();
+        String TIPO_USUARIO = "contador";
         ObjectId tipoUsuarioId = null;
 
         if (iTipoUsuario.findByName(TIPO_USUARIO.toLowerCase()).isPresent()) {

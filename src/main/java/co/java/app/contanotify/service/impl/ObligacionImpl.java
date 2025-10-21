@@ -5,9 +5,11 @@ import co.java.app.contanotify.dto.ObligacionDTO;
 import co.java.app.contanotify.model.ConfiguracionObligaciones;
 import co.java.app.contanotify.model.Obligacion;
 import co.java.app.contanotify.model.ObligacionCliente;
+import co.java.app.contanotify.model.Usuario;
 import co.java.app.contanotify.repository.ConfiguracionObligacionesRepository;
 import co.java.app.contanotify.repository.ObligacionClienteRepository;
 import co.java.app.contanotify.repository.ObligacionRepository;
+import co.java.app.contanotify.repository.UsuarioRepository;
 import co.java.app.contanotify.service.IObligacion;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ObligacionImpl implements IObligacion {
@@ -23,13 +26,16 @@ public class ObligacionImpl implements IObligacion {
     private final ObligacionRepository obligacionRepository;
     private final ConfiguracionObligacionesRepository configuracionObligacionesRepository;
     private final ObligacionClienteRepository obligacionClienteRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public ObligacionImpl(ObligacionRepository obligacionRepository,
                           ConfiguracionObligacionesRepository configuracionObligacionesRepository,
-                          ObligacionClienteRepository obligacionClienteRepository) {
+                          ObligacionClienteRepository obligacionClienteRepository,
+                          UsuarioRepository usuarioRepository) {
         this.obligacionRepository = obligacionRepository;
         this.configuracionObligacionesRepository = configuracionObligacionesRepository;
         this.obligacionClienteRepository = obligacionClienteRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
@@ -53,6 +59,7 @@ public class ObligacionImpl implements IObligacion {
         obligacion.setName(obligacionDTO.getName().toLowerCase());
         obligacion.setState(true);
 
+        obligacion.setPublicId(UUID.randomUUID());
         obligacionRepository.save(obligacion);
     }
 
@@ -65,7 +72,7 @@ public class ObligacionImpl implements IObligacion {
         }
         for(Obligacion obligacion: obligaciones){
             ObligacionDTO obligacionDTO = new ObligacionDTO();
-            obligacionDTO.setId(obligacion.getId());
+            obligacionDTO.setId(obligacion.getPublicId().toString());
             obligacionDTO.setName(obligacion.getName());
             listObligaciones.add(obligacionDTO);
         }
@@ -76,7 +83,9 @@ public class ObligacionImpl implements IObligacion {
     @Override
     public List<AlertasCriticasDTO> dashboard(String usuarioId) {
         List<AlertasCriticasDTO> alertasCriticasList = new ArrayList<>();
-        Optional<List<ConfiguracionObligaciones>> configuracionObligacionesList = configuracionObligacionesRepository.findByUsuarioId(usuarioId);
+
+        Optional<Usuario> usuario = usuarioRepository.findByPublicId(UUID.fromString(usuarioId));
+        Optional<List<ConfiguracionObligaciones>> configuracionObligacionesList = configuracionObligacionesRepository.findByUsuarioId(usuario.get().getId());
 
         if(configuracionObligacionesList.isEmpty()){
             throw new RuntimeException("Error al consultar dashboard");

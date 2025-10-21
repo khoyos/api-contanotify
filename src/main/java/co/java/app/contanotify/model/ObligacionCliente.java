@@ -5,11 +5,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Document(collection = "obligaciones_clientes")
 public class ObligacionCliente {
     @Id
     private String id;
+    private UUID publicId;
     private ObjectId configuracionClienteId;
     private ObjectId calendarioId;
     private LocalDateTime fecha;
@@ -77,4 +79,8 @@ public class ObligacionCliente {
     public boolean isReminderToDaySent() {return reminderToDaySent;}
 
     public void setReminderToDaySent(boolean reminderToDaySent) {this.reminderToDaySent = reminderToDaySent;}
+
+    public UUID getPublicId() { return publicId; }
+
+    public void setPublicId(UUID publicId) { this.publicId = publicId; }
 }
