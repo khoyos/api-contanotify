@@ -13,7 +13,7 @@ public class Calendario {
     @Id
     private String id;
 
-    private UUID publicId; // UUID público
+    private String publicId; // UUID público
 
     private String nombre;
 
@@ -67,7 +67,7 @@ public class Calendario {
         return fechas;
     }
     public void setFechas(List<Fecha> fechas) {this.fechas = fechas;}
-    public UUID getPublicId() {return publicId;}
-    public void setPublicId(UUID publicId) {this.publicId = publicId;}
+    public String getPublicId() {return publicId;}
+    public void setPublicId(String publicId) {this.publicId = publicId;}
 
 }

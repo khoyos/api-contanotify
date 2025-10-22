@@ -4,14 +4,13 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
-import java.util.UUID;
 
 @Document(collection = "usuarios")
 public class Usuario {
 
     @Id
     private String id;
-    private UUID publicId;
+    private String publicId;
     private String nombre;
     private String documento;
     private String email;
@@ -148,7 +147,8 @@ public class Usuario {
 
     public void setActive(boolean active) { this.active = active; }
 
-    public UUID getPublicId() { return publicId; }
+    public String getPublicId() { return publicId; }
 
-    public void setPublicId(UUID publicId) { this.publicId = publicId; }
+    public void setPublicId(String publicId) { this.publicId = publicId; }
+
 }

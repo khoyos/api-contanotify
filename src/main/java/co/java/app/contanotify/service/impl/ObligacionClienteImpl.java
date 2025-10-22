@@ -1,9 +1,6 @@
 package co.java.app.contanotify.service.impl;
 
-import co.java.app.contanotify.dto.ConfiguracionObligacionesDTO;
-import co.java.app.contanotify.dto.ObligacionClienteDTO;
-import co.java.app.contanotify.dto.ObligacionTableDTO;
-import co.java.app.contanotify.dto.UsuarioDTO;
+import co.java.app.contanotify.dto.*;
 import co.java.app.contanotify.model.*;
 import co.java.app.contanotify.repository.*;
 import co.java.app.contanotify.service.IObligacionCliente;
@@ -55,26 +52,26 @@ public class ObligacionClienteImpl implements IObligacionCliente {
 
     @Override
     public List<Map<String, Object>>  save(ObligacionClienteDTO obligacionClienteDTO) {
+        Optional<Usuario> optUsuarioCliente = usuarioRepository.findByPublicId(obligacionClienteDTO.getUsuarioClienteId());
 
-        Optional<ConfiguracionCliente> configuracionCliente= configuracionClienteRepository.findByUsuarioClienteId(new ObjectId(obligacionClienteDTO.getUsuarioClienteId()));
+        if(!optUsuarioCliente.isPresent()||optUsuarioCliente.isEmpty()){
+            new RuntimeException("Error al guardar la información");
+        }
+
+        Optional<ConfiguracionCliente> configuracionCliente= configuracionClienteRepository.findByUsuarioClienteId(new ObjectId(optUsuarioCliente.get().getId()));
         if(!configuracionCliente.isPresent()|| configuracionCliente.isEmpty()){
             new RuntimeException("Error al guardar la información");
         }
 
-        Optional<Usuario> usuarioCliente = usuarioRepository.findById(obligacionClienteDTO.getUsuarioClienteId().toString());
-
-        if(!usuarioCliente.isPresent()||usuarioCliente.isEmpty()){
-            new RuntimeException("Error al guardar la información");
-        }
-
-        String documento = usuarioCliente.get().getDocumento();
+        String documento = optUsuarioCliente.get().getDocumento();
         String ultimoDigitoNit = String.valueOf(documento.charAt(documento.length() - 1));
         String penultimosDigitosNit = String.valueOf(documento.charAt(documento.length() - 2));
 
         String dosUltimosDigitosNit = penultimosDigitosNit+ultimoDigitoNit;
 
+        Optional<Obligacion> optionalObligacion = obligacionRepository.findByPublicId(obligacionClienteDTO.getObligacionRentaId());
 
-        Optional<List<Calendario>> calendarios= calendarioRepository.findByObligacionId(obligacionClienteDTO.getObligacionRentaId());
+        Optional<List<Calendario>> calendarios= calendarioRepository.findByObligacionId(optionalObligacion.get().getId());
 
         if(calendarios.isEmpty()|| !calendarios.isPresent()){
             new RuntimeException("Error al guardar la información");
@@ -83,8 +80,28 @@ public class ObligacionClienteImpl implements IObligacionCliente {
         List<Map<String, Object>> responses = new ArrayList<>();
 
         for(Calendario calendario:  calendarios.get()){
-            Optional<Obligacion> obligacion = obligacionRepository.findById(calendario.getObligacionId());
+
             for(Fecha fecha: calendario.getFechas()){
+
+                if(fecha.getNit().contains("independiente")){
+
+                    ObligacionCliente obligacionCliente = new ObligacionCliente();
+
+                    obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
+                    obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
+                    obligacionCliente.setFecha(fecha.getFecha());
+
+                    obligacionCliente.setPublicId(UUID.randomUUID().toString());
+                    obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
+
+                    HashMap<String, Object> response = new HashMap<>();
+                    response.put("fecha", fecha.getFecha());
+                    response.put("obligacionClienteId", obligacionCliente.getPublicId());
+                    response.put("nombrePago", calendario.getNombre());
+                    response.put("periodo", calendario.getCalendario());
+
+                    responses.add(response);
+                }
 
                 if(fecha.getNit().contains("-")){
                     //Registrar las fechas con respecto a la logica de los 2 nits
@@ -102,13 +119,14 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                         obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
                         obligacionCliente.setFecha(fecha.getFecha());
 
-                        obligacionCliente.setPublicId(UUID.randomUUID());
+                        obligacionCliente.setPublicId(UUID.randomUUID().toString());
                         obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
 
                         HashMap<String, Object> response = new HashMap<>();
                         response.put("fecha", fecha.getFecha());
                         response.put("obligacionClienteId", obligacionCliente.getPublicId());
                         response.put("nombrePago", calendario.getNombre());
+                        response.put("periodo", calendario.getCalendario());
 
                         responses.add(response);
 
@@ -123,13 +141,14 @@ public class ObligacionClienteImpl implements IObligacionCliente {
                         obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
                         obligacionCliente.setFecha(fecha.getFecha());
 
-                        obligacionCliente.setPublicId(UUID.randomUUID());
+                        obligacionCliente.setPublicId(UUID.randomUUID().toString());
                         obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
 
                         HashMap<String, Object> response = new HashMap<>();
                         response.put("fecha", fecha.getFecha());
                         response.put("obligacionClienteId", obligacionCliente.getPublicId());
                         response.put("nombrePago", calendario.getNombre());
+                        response.put("periodo", calendario.getCalendario());
 
                         responses.add(response);
 
@@ -197,6 +216,8 @@ public class ObligacionClienteImpl implements IObligacionCliente {
             dto.setRenta(item.getRenta());
             dto.setPago(item.getPago());
             dto.setFecha(item.getFecha());
+            dto.setEstado(item.getEstado());
+            dto.setObservacion(item.getObservacion());
             return dto;
         }).toList();
 
@@ -217,9 +238,28 @@ public class ObligacionClienteImpl implements IObligacionCliente {
         configuracionObligaciones.setPago(configuracionObligacionesDTO.getPago());
         configuracionObligaciones.setFecha(configuracionObligacionesDTO.getFecha());
         configuracionObligaciones.setObligacionClienteId(configuracionObligacionesDTO.getObligacionClienteId());
+        configuracionObligaciones.setEstado("");
+        configuracionObligaciones.setObservacion("");
+        configuracionObligaciones.setPeriodo(configuracionObligacionesDTO.getPeriodo());
 
-        configuracionObligaciones.setPublicId(UUID.randomUUID());
+        configuracionObligaciones.setPublicId(UUID.randomUUID().toString());
         configuracionObligacionesRepository.save(configuracionObligaciones);
+    }
+
+    @Override
+    public void actualizarConfiguracionObligacion(String idConfiguracionObligacion, EstadoObligacionClienteDTO estadoObligacionClienteDTO) {
+        Optional<ConfiguracionObligaciones> optObligacionCliente = configuracionObligacionesRepository.findByPublicId(idConfiguracionObligacion);
+
+        if(optObligacionCliente.isEmpty()){
+            throw new RuntimeException("No se pudo actualizar el estado");
+        }
+
+        optObligacionCliente.get().setEstado(estadoObligacionClienteDTO.getEstado());
+        optObligacionCliente.get().setObservacion(estadoObligacionClienteDTO.getObservacion());
+
+        configuracionObligacionesRepository.save(optObligacionCliente.get());
+
+        //TODO: CUANDO CAMBIA DE ESTADO EL CLIENTE RECIBE INFORMACIÓN POR EMAIL
     }
 
 }

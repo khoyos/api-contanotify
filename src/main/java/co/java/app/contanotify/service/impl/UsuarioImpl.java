@@ -50,6 +50,7 @@ public class UsuarioImpl implements IUsuario {
         Usuario usuario = new Usuario();
         usuario.setEmail(usuarioDTO.getEmail());
         usuario.setNombre(usuarioDTO.getNombre());
+        usuario.setRazonSocial(usuarioDTO.getRazonSocial());
         usuario.setTipoDocumento(usuarioDTO.getTipoDocumento().toLowerCase());
         usuario.setDocumento(usuarioDTO.getDocumento());
         usuario.setTelefono(usuarioDTO.getTelefono());
@@ -64,14 +65,14 @@ public class UsuarioImpl implements IUsuario {
             TipoUsuario tipoUsuario = new TipoUsuario();
             tipoUsuario.setName(TIPO_USUARIO);
 
-            tipoUsuario.setPublicId(UUID.randomUUID());
+            tipoUsuario.setPublicId(UUID.randomUUID().toString());
             tipoUsuarioRepository.save(tipoUsuario);
             tipoUsuarioId = new ObjectId(tipoUsuarioRepository.findByName(TIPO_USUARIO).get().getId());
         }
         usuario.setTipoUsuarioId(tipoUsuarioId);
         usuario.setEstado(true);
 
-        usuario.setPublicId(UUID.randomUUID());
+        usuario.setPublicId(UUID.randomUUID().toString());
         usuarioRepository.save(usuario);
 
         return usuarioDTO;
@@ -116,6 +117,7 @@ public class UsuarioImpl implements IUsuario {
             dto.setEmail(usuario.getEmail());
             dto.setTelefono(usuario.getTelefono());
             dto.setTipoDocumento(usuario.getTipoDocumento());
+            dto.setRazonSocial(usuario.getRazonSocial());
             return dto;
         }).toList();
 
@@ -144,7 +146,7 @@ public class UsuarioImpl implements IUsuario {
     @Override
     public UsuarioDTO findById(String id) {
         UsuarioDTO usuarioDTO = new UsuarioDTO();
-        Optional<Usuario> usuario = usuarioRepository.findByPublicId(UUID.fromString(id));
+        Optional<Usuario> usuario = usuarioRepository.findByPublicId(id);
 
         if(usuario.isEmpty()){
             throw new RuntimeException("Error al consultar el usuario");
@@ -156,6 +158,7 @@ public class UsuarioImpl implements IUsuario {
         usuarioDTO.setTelefono(usuario.get().getTelefono());
         usuarioDTO.setEmail(usuario.get().getEmail());
         usuarioDTO.setTipoDocumento(usuario.get().getTipoDocumento());
+        usuarioDTO.setRazonSocial(usuario.get().getRazonSocial());
 
         return usuarioDTO;
     }
@@ -164,20 +167,22 @@ public class UsuarioImpl implements IUsuario {
     public void update(UsuarioDTO usuarioDTO) {
         Usuario usuario = new Usuario();
 
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByPublicId(UUID.fromString(usuarioDTO.getId()));
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByPublicId(usuarioDTO.getId());
 
         if(usuarioOptional.isEmpty()){
            throw new RuntimeException("Usuario invalido");
         }
         usuario = usuarioOptional.get();
-        usuario.setPublicId(usuarioOptional.get().getPublicId());
 
-        usuario.setId(usuarioDTO.getId());
+        usuario.setId(usuarioOptional.get().getId());
+        usuario.setPublicId(usuarioOptional.get().getPublicId());
         usuario.setNombre(usuarioDTO.getNombre());
         usuario.setDocumento(usuarioDTO.getDocumento());
         usuario.setTelefono(usuarioDTO.getTelefono());
         usuario.setEmail(usuarioDTO.getEmail());
         usuario.setTipoDocumento(usuarioDTO.getTipoDocumento());
+        usuario.setRazonSocial(usuarioDTO.getRazonSocial());
+
         usuario.setActive(true);
 
         ObjectId tipoUsuarioId = null;
@@ -211,7 +216,7 @@ public class UsuarioImpl implements IUsuario {
 
         usuario.setActive(false);
 
-        usuario.setPublicId(UUID.randomUUID());
+        usuario.setPublicId(UUID.randomUUID().toString());
         usuarioRepository.save(usuario);
     }
 }

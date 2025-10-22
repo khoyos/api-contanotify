@@ -38,7 +38,7 @@ public class ReminderScheduler {
     @Scheduled(fixedRate = 60000)
     public void scheduleReminders() {
         LocalDate today = LocalDate.now();
-        System.out.println("* scheduleReminders leyendo cola");
+        //System.out.println("* scheduleReminders leyendo cola");
 
         // Buscar tareas para 5 días adelante
         processRemindersPlusDays(today.plusDays(5),5);
@@ -71,7 +71,6 @@ public class ReminderScheduler {
                 sendReminders(obligacionDelCliente, 5);
                 obligacionDelCliente.setReminder5DaysSent(true);
 
-                obligacionDelCliente.setPublicId(UUID.randomUUID());
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar 5 días antes envio email y se guardo obligacion cliente");
@@ -80,7 +79,6 @@ public class ReminderScheduler {
                 sendReminders(obligacionDelCliente, 3);
                 obligacionDelCliente.setReminder3DaysSent(true);
 
-                obligacionDelCliente.setPublicId(UUID.randomUUID());
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar 3 días antes envio email y se guardo obligacion cliente");
@@ -89,7 +87,6 @@ public class ReminderScheduler {
                 sendReminders(obligacionDelCliente, 1);
                 obligacionDelCliente.setReminder1DaySent(true);
 
-                obligacionDelCliente.setPublicId(UUID.randomUUID());
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar 1 días antes envio email y se guardo obligacion cliente");
@@ -98,7 +95,6 @@ public class ReminderScheduler {
                 sendReminders(obligacionDelCliente, 0);
                 obligacionDelCliente.setReminderToDaySent(true);
 
-                obligacionDelCliente.setPublicId(UUID.randomUUID());
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar hoy días antes envio email y se guardo obligacion cliente");

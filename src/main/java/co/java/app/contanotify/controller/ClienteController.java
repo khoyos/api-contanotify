@@ -121,9 +121,9 @@ public class ClienteController {
             usuarioDTO.setTelefono(client.getTelefono());
             usuarioDTO.setEmail(client.getEmail());
             usuarioDTO.setTipoDocumento(client.getTipoDocumento());
+            usuarioDTO.setRazonSocial(client.getRazonSocial());
 
             iUsuario.update(usuarioDTO);
-
 
             return ResponseEntity.status(201).body(Map.of(
                     "message", "se consulto el cliente exitosamente",

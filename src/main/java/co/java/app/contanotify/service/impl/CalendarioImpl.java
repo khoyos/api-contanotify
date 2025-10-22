@@ -58,7 +58,7 @@ public class CalendarioImpl implements ICalendario {
     }
 
     private List<Calendario> getCalendarios(String publicId) {
-        Optional<Obligacion> obligacion = obligacionRepository.findByPublicId(UUID.fromString(publicId));
+        Optional<Obligacion> obligacion = obligacionRepository.findByPublicId(publicId);
         Optional<List<Calendario>> calendarios= calendarioRepository.findByObligacionId(obligacion.get().getId());
         List<Calendario> calendario = calendarios.stream().findFirst().get();
         return calendario;
@@ -116,7 +116,7 @@ public class CalendarioImpl implements ICalendario {
 
         calendario.setFechas(fechas);
 
-        calendario.setPublicId(UUID.randomUUID());
+        calendario.setPublicId(UUID.randomUUID().toString());
         calendarioRepository.save(calendario);
     }
 

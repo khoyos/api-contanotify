@@ -12,6 +12,7 @@ public class ConfiguracionObligacionesDTO {
     private String pago;
     private String fecha;
     private String obligacionClienteId;
+    private String periodo;
 
     public String getId() {
         return id;
@@ -92,4 +93,8 @@ public class ConfiguracionObligacionesDTO {
     public void setIdentidadCliente(String identidadCliente) {
         this.identidadCliente = identidadCliente;
     }
+
+    public String getPeriodo() { return periodo; }
+
+    public void setPeriodo(String periodo) { this.periodo = periodo; }
 }

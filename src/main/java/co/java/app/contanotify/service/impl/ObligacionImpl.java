@@ -59,7 +59,7 @@ public class ObligacionImpl implements IObligacion {
         obligacion.setName(obligacionDTO.getName().toLowerCase());
         obligacion.setState(true);
 
-        obligacion.setPublicId(UUID.randomUUID());
+        obligacion.setPublicId(UUID.randomUUID().toString());
         obligacionRepository.save(obligacion);
     }
 
@@ -84,7 +84,7 @@ public class ObligacionImpl implements IObligacion {
     public List<AlertasCriticasDTO> dashboard(String usuarioId) {
         List<AlertasCriticasDTO> alertasCriticasList = new ArrayList<>();
 
-        Optional<Usuario> usuario = usuarioRepository.findByPublicId(UUID.fromString(usuarioId));
+        Optional<Usuario> usuario = usuarioRepository.findByPublicId(usuarioId);
         Optional<List<ConfiguracionObligaciones>> configuracionObligacionesList = configuracionObligacionesRepository.findByUsuarioId(usuario.get().getId());
 
         if(configuracionObligacionesList.isEmpty()){

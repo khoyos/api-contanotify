@@ -10,7 +10,7 @@ public class ConfiguracionObligaciones {
 
     @Id
     private String id;
-    private UUID publicId;
+    private String publicId;
     private String usuarioId;
     private String clienteId;
     private String identidadCliente;
@@ -20,6 +20,9 @@ public class ConfiguracionObligaciones {
     private String pago;
     private String fecha;
     private String obligacionClienteId;
+    private String estado;
+    private String observacion;
+    private String periodo;
 
     public String getId() {
         return id;
@@ -99,7 +102,19 @@ public class ConfiguracionObligaciones {
 
     public void setIdentidadCliente(String identidadCliente) {this.identidadCliente = identidadCliente;}
 
-    public UUID getPublicId() { return publicId;}
+    public String getPublicId() { return publicId;}
 
-    public void setPublicId(UUID publicId) { this.publicId = publicId;}
+    public void setPublicId(String publicId) { this.publicId = publicId;}
+
+    public String getEstado() { return estado; }
+
+    public void setEstado(String estado) { this.estado = estado; }
+
+    public String getObservacion() { return observacion; }
+
+    public void setObservacion(String observacion) { this.observacion = observacion; }
+
+    public String getPeriodo() { return periodo; }
+
+    public void setPeriodo(String periodo) { this.periodo = periodo; }
 }

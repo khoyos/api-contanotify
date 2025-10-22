@@ -9,6 +9,8 @@ public class ObligacionTableDTO {
     private String pago;
     private String fecha;
     private String identidadCliente;
+    private String estado;
+    private String observacion;
 
     public String getId() {
         return id;
@@ -65,4 +67,13 @@ public class ObligacionTableDTO {
     public void setIdentidadCliente(String identidadCliente) {
         this.identidadCliente = identidadCliente;
     }
+
+    public String getEstado() { return estado; }
+
+    public void setEstado(String estado) { this.estado = estado; }
+
+    public String getObservacion() { return observacion; }
+
+    public void setObservacion(String observacion) { this.observacion = observacion; }
+
 }

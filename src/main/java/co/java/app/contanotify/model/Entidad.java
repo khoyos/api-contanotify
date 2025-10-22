@@ -10,7 +10,7 @@ public class Entidad {
 
     @Id
     private String id;
-    private UUID publicId;
+    private String publicId;
     private String name;
     private boolean state;
 
@@ -38,7 +38,7 @@ public class Entidad {
         this.state = state;
     }
 
-    public UUID getPublicId() { return publicId; }
+    public String getPublicId() { return publicId; }
 
-    public void setPublicId(UUID publicId) { this.publicId = publicId; }
+    public void setPublicId(String publicId) { this.publicId = publicId; }
 }

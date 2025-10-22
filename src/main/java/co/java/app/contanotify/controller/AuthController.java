@@ -58,7 +58,7 @@ public class AuthController {
         String token = jwtUtil.generateToken(user.getEmail());
         return ResponseEntity.ok(Map.of("token", token,
                 "user", user.getNombre(),
-                "userId", user.getId()));
+                "userId", user.getPublicId()));
     }
 
     @PostMapping("/request-reset")
@@ -97,38 +97,46 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest req) {
-        req.getNombre();
         if (repo.findByEmail(req.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "El email ya está registrado"));
         }
 
-        Usuario u = new Usuario();
-        u.setEmail(req.getEmail());
-        u.setNombre(req.getNombre());
-        u.setPassword(encoder.encode(req.getPassword()));
-        u.setTipoDocumento("cedula");
-        u.setDocumento("");
-        u.setTelefono("");
-        u.setActive(true);
+        Usuario usuario = new Usuario();
+        usuario.setEmail(req.getEmail());
+        usuario.setNombre(req.getNombre());
+        usuario.setPassword(encoder.encode(req.getPassword()));
+        usuario.setTipoDocumento(req.getTipoDocumento());
+        usuario.setDocumento(req.getNumeroDocumento());
+        usuario.setTelefono(req.getTelefono());
+        usuario.setActive(true);
 
         String TIPO_USUARIO = "contador";
         ObjectId tipoUsuarioId = null;
 
         if (iTipoUsuario.findByName(TIPO_USUARIO.toLowerCase()).isPresent()) {
-            tipoUsuarioId = new ObjectId(iTipoUsuario.findByName(TIPO_USUARIO).get().getId());
+            TipoUsuarioDTO tipoUsuarioDTO = new TipoUsuarioDTO();
+            tipoUsuarioDTO = iTipoUsuario.findByName(TIPO_USUARIO).get();
+            tipoUsuarioId = new ObjectId(iTipoUsuario.findByPublicId(tipoUsuarioDTO.getPublicId()).get().getId());
+
         }else{
             TipoUsuarioDTO tipoUsuarioDTO = new TipoUsuarioDTO();
             tipoUsuarioDTO.setName(TIPO_USUARIO);
+
             iTipoUsuario.save(tipoUsuarioDTO);
-            tipoUsuarioId = new ObjectId(iTipoUsuario.findByName(TIPO_USUARIO).get().getId());
+
+            tipoUsuarioDTO = iTipoUsuario.findByName(TIPO_USUARIO).get();
+            tipoUsuarioId = new ObjectId(iTipoUsuario.findByPublicId(tipoUsuarioDTO.getPublicId()).get().getId());
+
         }
-        u.setTipoUsuarioId(tipoUsuarioId);
-        u.setEstado(true);
-        repo.save(u);
+        usuario.setTipoUsuarioId(tipoUsuarioId);
+        usuario.setEstado(true);
+
+        usuario.setPublicId(UUID.randomUUID().toString());
+        repo.save(usuario);
 
         return ResponseEntity.status(201).body(Map.of(
                 "message", "Usuario registrado exitosamente",
-                "email", u.getEmail()
+                "email", usuario.getEmail()
         ));
     }
 

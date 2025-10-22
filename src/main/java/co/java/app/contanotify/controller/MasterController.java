@@ -42,6 +42,7 @@ public class MasterController {
         if (iTipoUsuario.findByName(req.getName().toLowerCase()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "El tipo de usuario ya está registrado"));
         }
+
         iTipoUsuario.save(req);
 
         return ResponseEntity.status(201).body(Map.of(
@@ -55,6 +56,7 @@ public class MasterController {
         if (iObligacion.findByName(req.getName().toLowerCase()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "La obligación ya está registrada"));
         }
+
         iObligacion.save(req);
 
         return ResponseEntity.status(201).body(Map.of(

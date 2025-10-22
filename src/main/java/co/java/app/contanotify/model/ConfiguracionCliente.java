@@ -10,7 +10,7 @@ import java.util.UUID;
 public class ConfiguracionCliente {
     @Id
     private String id;
-    private UUID publicId;
+    private String publicId;
     private ObjectId usuarioId;
     private ObjectId usuarioClienteId;
     private ObjectId entidadId;
@@ -92,7 +92,7 @@ public class ConfiguracionCliente {
         this.notificarSms = notificarSms;
     }
 
-    public UUID getPublicId() {return publicId;}
+    public String getPublicId() {return publicId;}
 
-    public void setPublicId(UUID publicId) {this.publicId = publicId;}
+    public void setPublicId(String publicId) {this.publicId = publicId;}
 }

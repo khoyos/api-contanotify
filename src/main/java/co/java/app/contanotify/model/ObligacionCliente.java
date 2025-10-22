@@ -11,7 +11,7 @@ import java.util.UUID;
 public class ObligacionCliente {
     @Id
     private String id;
-    private UUID publicId;
+    private String publicId;
     private ObjectId configuracionClienteId;
     private ObjectId calendarioId;
     private LocalDateTime fecha;
@@ -80,7 +80,7 @@ public class ObligacionCliente {
 
     public void setReminderToDaySent(boolean reminderToDaySent) {this.reminderToDaySent = reminderToDaySent;}
 
-    public UUID getPublicId() { return publicId; }
+    public String getPublicId() { return publicId; }
 
-    public void setPublicId(UUID publicId) { this.publicId = publicId; }
+    public void setPublicId(String publicId) { this.publicId = publicId; }
 }

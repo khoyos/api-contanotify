@@ -2,6 +2,7 @@ package co.java.app.contanotify.controller;
 
 import co.java.app.contanotify.dto.*;
 import co.java.app.contanotify.service.IObligacionCliente;
+import co.java.app.contanotify.service.IUsuario;
 import co.java.app.contanotify.service.impl.ObligacionClienteImpl;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -21,7 +22,6 @@ public class ObligacionClienteController {
 
     private final IObligacionCliente iObligacionCliente;
 
-
     public ObligacionClienteController(ObligacionClienteImpl obligacionClienteImpl) {
         this.iObligacionCliente = obligacionClienteImpl;
     }
@@ -30,10 +30,6 @@ public class ObligacionClienteController {
     public ResponseEntity<?> obligacionClienteRegister(@RequestBody @Valid ObligacionClienteDTO req) {
 
         List<Map<String, Object>> responses = iObligacionCliente.save(req);
-
-
-        /*String fecha = response.get("fecha").toString();
-        String obligacionClienteId = response.get("obligacionClienteId").toString();*/
 
         return ResponseEntity.status(201).body(Map.of(
                 "message", "La obligacion cliente se guardo con exito",
@@ -87,6 +83,25 @@ public class ObligacionClienteController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of(
                     "error", "Error al hacer la consulta",
+                    "details", e.getMessage()
+            ));
+        }
+    }
+
+    @PutMapping("/{idObligacion}")
+    public ResponseEntity<?> update(
+            @PathVariable String idObligacion,
+            @RequestBody EstadoObligacionClienteDTO estadoObligacionDTO) {
+        try {
+
+            iObligacionCliente.actualizarConfiguracionObligacion(idObligacion, estadoObligacionDTO);
+
+            return ResponseEntity.status(201).body(Map.of(
+                    "message", "se actualizo el obligación exitosamente"));
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "error", "Error al actualizo la obligación",
                     "details", e.getMessage()
             ));
         }

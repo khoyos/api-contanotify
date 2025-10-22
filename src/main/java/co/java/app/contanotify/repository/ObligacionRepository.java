@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface ObligacionRepository extends MongoRepository<Obligacion, String> {
 
-    Optional<Obligacion> findByPublicId(UUID publicId);
+    Optional<Obligacion> findByPublicId(String publicId);
 
     Optional<Obligacion> findByName(String name);
 

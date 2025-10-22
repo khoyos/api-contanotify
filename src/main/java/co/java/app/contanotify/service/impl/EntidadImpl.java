@@ -40,10 +40,10 @@ public class EntidadImpl implements IEntidad {
     public void save(EntidadDTO entidadDTO) {
         Entidad entidad = new Entidad();
 
-        entidad.setName(entidadDTO.getName().toLowerCase());
+        entidad.setName(entidadDTO.getName());
         entidad.setState(true);
 
-        entidad.setPublicId(UUID.randomUUID());
+        entidad.setPublicId(UUID.randomUUID().toString());
         entidadRepository.save(entidad);
     }
 

@@ -29,7 +29,7 @@ public class ReminderProducer {
     }
 
     public void sendReminder(Map<String,Object> payload, int days) {
-        System.out.println("* sendReminder");
+        //System.out.println("* sendReminder");
         switch (days) {
             case 5 -> jmsTemplate.convertAndSend(reminder5DaysQueue, payload.toString());
             case 3 -> jmsTemplate.convertAndSend(reminder3DaysQueue, payload.toString());

@@ -28,7 +28,7 @@ public class TipoUsuarioImpl implements ITipoUsuario {
         }
         TipoUsuarioDTO tipoUsuarioDTO = new TipoUsuarioDTO();
 
-        tipoUsuarioDTO.setId(tipoUsuario.get().getPublicId().toString());
+        tipoUsuarioDTO.setPublicId(tipoUsuario.get().getPublicId());
         tipoUsuarioDTO.setName(tipoUsuario.get().getName());
 
         return Optional.of(tipoUsuarioDTO);
@@ -40,8 +40,19 @@ public class TipoUsuarioImpl implements ITipoUsuario {
         tipoUsuario.setName(tipoUsuarioDTO.getName().toLowerCase());
         tipoUsuario.setState(true);
 
-        tipoUsuario.setPublicId(UUID.randomUUID());
+        tipoUsuario.setPublicId(UUID.randomUUID().toString());
         tipoUsuarioRepository.save(tipoUsuario);
 
+    }
+
+    @Override
+    public Optional<TipoUsuarioDTO> findByPublicId(String publicId) {
+        Optional<TipoUsuario> opt=tipoUsuarioRepository.findByPublicId(publicId);
+        TipoUsuarioDTO tipoUsuarioDTO = new TipoUsuarioDTO();
+        tipoUsuarioDTO.setId(opt.get().getId());
+        tipoUsuarioDTO.setPublicId(opt.get().getPublicId());
+        tipoUsuarioDTO.setName(opt.get().getName());
+
+        return Optional.of(tipoUsuarioDTO);
     }
 }
