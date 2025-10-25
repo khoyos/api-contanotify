@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recordatorio Tributario - ContaNotify</title>
+
+    <style>
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: #f4f6f8;
+          font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          color: #2c3e50;
+        }
+
+        .email-container {
+          max-width: 650px;
+          margin: 40px auto;
+          background: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+          overflow: hidden;
+        }
+
+        .header {
+          background: linear-gradient(135deg, #004e92 0%, #000428 100%);
+          padding: 35px 25px;
+          text-align: center;
+          color: white;
+        }
+
+        .header h1 {
+          font-size: 26px;
+          margin: 0;
+          font-weight: 700;
+        }
+
+        .header p {
+          margin-top: 10px;
+          font-size: 15px;
+          opacity: 0.9;
+        }
+
+        .content {
+          padding: 35px 30px;
+          line-height: 1.7;
+        }
+
+        .greeting {
+          font-size: 18px;
+          font-weight: 600;
+          margin-bottom: 15px;
+        }
+
+        .alert-box {
+          background-color: #e8f0fe;
+          border-left: 4px solid #1565c0;
+          padding: 20px;
+          border-radius: 6px;
+          margin: 25px 0;
+        }
+
+        .alert-box h2 {
+          margin: 0 0 10px 0;
+          color: #0d47a1;
+          font-size: 18px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .obligations-list {
+          background-color: #f9fafb;
+          border: 1px solid #dbe2ef;
+          border-radius: 10px;
+          padding: 20px;
+          margin: 25px 0;
+        }
+
+        .obligations-title {
+          text-align: center;
+          font-weight: 700;
+          color: #004085;
+          margin-bottom: 15px;
+        }
+
+        .obligation-item {
+          background: white;
+          padding: 15px;
+          border-left: 4px solid #0d6efd;
+          border-radius: 6px;
+          margin-bottom: 12px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .obligation-date {
+          font-weight: 600;
+          color: #dc3545;
+        }
+
+        .cta-section {
+          text-align: center;
+          margin: 35px 0 15px 0;
+        }
+
+        .cta-button {
+          background-color: #004e92;
+          color: white;
+          text-decoration: none;
+          padding: 14px 30px;
+          border-radius: 25px;
+          font-weight: 600;
+          transition: background 0.3s ease, transform 0.2s ease;
+          display: inline-block;
+        }
+
+        .cta-button:hover {
+          background-color: #1565c0;
+          transform: translateY(-2px);
+        }
+
+        .footer {
+          background: #000428;
+          color: #fff;
+          text-align: center;
+          padding: 25px;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        .footer strong {
+          font-size: 16px;
+          display: block;
+          margin-bottom: 5px;
+        }
+
+        @media (max-width: 600px) {
+          .email-container {
+            margin: 20px;
+          }
+          .content {
+            padding: 25px 20px;
+          }
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-container">
+    <div class="header">
+        <h1>Recordatorio de Obligaciones Tributarias</h1>
+        <p>Asesoría Contable Profesional - ContaNotify</p>
+    </div>
+
+    <div class="content">
+        <p class="greeting">Estimado/a <strong>Contador(a) <span th:text="${name}">Usuario</span></strong> 👋</p>
+        <p>
+            Le recordamos las fechas importantes para el cumplimiento de las
+            obligaciones tributarias de sus clientes. Mantener la puntualidad en
+            estas gestiones evita sanciones y fortalece la confianza profesional.
+        </p>
+
+        <div class="alert-box">
+            <h2>📆 Fechas Clave</h2>
+            <p>Verifique el calendario de acuerdo con los últimos dígitos del NIT de cada cliente.</p>
+        </div>
+
+        <div class="obligations-list">
+            <div class="obligations-title">Calendario Tributario Próximo</div>
+
+            <div class="obligation-item">
+                <div class="obligation-date"><span th:text="${fecha}"></div>
+                <div><span th:text="${renta}"> - <span th:text="${obligacion}"></div>
+            </div>
+
+            <div class="obligation-item">
+                <div class="obligation-date">15 de Febrero, 2025</div>
+                <div>Declaración Retención en la Fuente - Periodo Enero</div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <a
+                    href="#"
+                    class="cta-button"
+                    onclick="event.preventDefault(); alert('Accediendo al sistema de gestión tributaria...');"
+            >
+                Acceder al Sistema
+            </a>
+        </div>
+
+        <p style="color: #555; font-size: 14px;">
+            <strong>Nota:</strong> Este recordatorio se envía como apoyo a su
+            gestión contable. Confirme siempre las fechas oficiales publicadas por la
+            DIAN.
+        </p>
+    </div>
+
+    <div class="footer">
+        <strong>ContaNotify</strong>
+        Recordatorios Profesionales para Contadores Públicos<br />
+        📧 info@contanotify.com | ☎️ +57 (1) 345-6789<br />
+        Cartagena de Indias, Colombia
+    </div>
+</div>
+</body>
+</html>

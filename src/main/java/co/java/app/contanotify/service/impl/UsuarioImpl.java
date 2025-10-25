@@ -152,7 +152,7 @@ public class UsuarioImpl implements IUsuario {
             throw new RuntimeException("Error al consultar el usuario");
         }
 
-        usuarioDTO.setId(usuario.get().getPublicId().toString());
+        usuarioDTO.setId(usuario.get().getId());
         usuarioDTO.setNombre(usuario.get().getNombre());
         usuarioDTO.setDocumento(usuario.get().getDocumento());
         usuarioDTO.setTelefono(usuario.get().getTelefono());
@@ -199,24 +199,14 @@ public class UsuarioImpl implements IUsuario {
 
     @Override
     public void delete(UsuarioDTO usuarioDTO) {
-        Usuario usuario = new Usuario();
-        usuario.setId(usuarioDTO.getId());
-        usuario.setNombre(usuarioDTO.getNombre());
-        usuario.setDocumento(usuarioDTO.getDocumento());
-        usuario.setTelefono(usuarioDTO.getTelefono());
-        usuario.setEmail(usuarioDTO.getEmail());
-        usuario.setTipoDocumento(usuarioDTO.getTipoDocumento());
+        Optional<Usuario> optUsuario = usuarioRepository.findByPublicId(usuarioDTO.getId());
 
-        ObjectId tipoUsuarioId = null;
-
-        if (tipoUsuarioRepository.findByName("cliente").isPresent()) {
-            tipoUsuarioId = new ObjectId(tipoUsuarioRepository.findByName("cliente").get().getId());
+        if(optUsuario.isEmpty()){
+            throw new RuntimeException("No pudo eliminar");
         }
-        usuario.setTipoUsuarioId(tipoUsuarioId);
 
-        usuario.setActive(false);
+        optUsuario.get().setActive(false);
 
-        usuario.setPublicId(UUID.randomUUID().toString());
-        usuarioRepository.save(usuario);
+        usuarioRepository.save(optUsuario.get());
     }
 }

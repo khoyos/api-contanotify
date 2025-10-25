@@ -15,17 +15,20 @@ public class ReminderProducer {
     private final Queue reminder3DaysQueue;
     private final Queue reminder1DayQueue;
     private final Queue reminderTodayQueue;
+    private final Queue reminderStatusClientQueue;
 
     public ReminderProducer(JmsTemplate jmsTemplate,
                             Queue reminder5DaysQueue,
                             Queue reminder3DaysQueue,
                             Queue reminder1DayQueue,
-                            Queue reminderTodayQueue) {
+                            Queue reminderTodayQueue,
+                            Queue reminderStatusClientQueue) {
         this.jmsTemplate = jmsTemplate;
         this.reminder5DaysQueue = reminder5DaysQueue;
         this.reminder3DaysQueue = reminder3DaysQueue;
         this.reminder1DayQueue = reminder1DayQueue;
         this.reminderTodayQueue = reminderTodayQueue;
+        this.reminderStatusClientQueue = reminderStatusClientQueue;
     }
 
     public void sendReminder(Map<String,Object> payload, int days) {
@@ -36,5 +39,11 @@ public class ReminderProducer {
             case 1 -> jmsTemplate.convertAndSend(reminder1DayQueue, payload.toString());
             case 0 -> jmsTemplate.convertAndSend(reminderTodayQueue, payload.toString());
         }
+    }
+
+    public void sendReminderClient(Map<String,Object> payload) {
+        System.out.println("* sendReminder cliente");
+        jmsTemplate.convertAndSend(reminderStatusClientQueue, payload.toString());
+
     }
 }

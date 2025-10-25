@@ -4,6 +4,7 @@ import co.java.app.contanotify.dto.*;
 import co.java.app.contanotify.model.*;
 import co.java.app.contanotify.repository.*;
 import co.java.app.contanotify.service.IObligacionCliente;
+import co.java.app.contanotify.util.FechaLegible;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,6 +217,7 @@ public class ObligacionClienteImpl implements IObligacionCliente {
             dto.setRenta(item.getRenta());
             dto.setPago(item.getPago());
             dto.setFecha(item.getFecha());
+            dto.setPeriodo(item.getPeriodo());
             dto.setEstado(item.getEstado());
             dto.setObservacion(item.getObservacion());
             return dto;
@@ -260,6 +262,33 @@ public class ObligacionClienteImpl implements IObligacionCliente {
         configuracionObligacionesRepository.save(optObligacionCliente.get());
 
         //TODO: CUANDO CAMBIA DE ESTADO EL CLIENTE RECIBE INFORMACIÓN POR EMAIL
+        if(optObligacionCliente.get().getEstado().equals("Por Hacer")){
+            return;
+        }
+
+        Optional<Usuario> optionalUsuario = usuarioRepository.findByPublicId(optObligacionCliente.get().getClienteId());
+
+        Map<String, Object> request = new HashMap<>();
+
+        String msg = "Información de su Obligacion Tributaria: " + optionalUsuario.get().getNombre() + " vence el " + optObligacionCliente.get().getFecha();
+
+        String estadoObservacion = optObligacionCliente.get().getObservacion().isEmpty()? "si":"no";
+        String observacion = optObligacionCliente.get().getObservacion().isEmpty()?"":optObligacionCliente.get().getObservacion();
+
+        String fechaLegible = FechaLegible.convertirFechaISOPorFechaLegible(optObligacionCliente.get().getFecha());
+
+        request.put("to", optionalUsuario.get().getEmail());
+        request.put("message", msg);
+        request.put("name", optionalUsuario.get().getNombre());
+        request.put("renta", optObligacionCliente.get().getRenta());
+        request.put("pago", optObligacionCliente.get().getPago());
+        request.put("fecha", fechaLegible.replace(",","") );
+        request.put("estado", optObligacionCliente.get().getEstado());
+        request.put("estadoObservacion", estadoObservacion);
+        request.put("observacion", observacion.replace(","," * "));
+
+        reminderProducer.sendReminderClient(request);
+
     }
 
 }

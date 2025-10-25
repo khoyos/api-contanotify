@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface ObligacionClienteRepository extends MongoRepository<ObligacionCliente,String> {
 
-    Optional<ObligacionCliente> findByPublicId(UUID publicId);
+    Optional<ObligacionCliente> findByPublicId(String publicId);
 
     Optional<List<ObligacionCliente>> findByFecha(LocalDateTime date);
 }

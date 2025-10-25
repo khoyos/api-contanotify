@@ -84,17 +84,14 @@ public class ObligacionImpl implements IObligacion {
     public List<AlertasCriticasDTO> dashboard(String usuarioId) {
         List<AlertasCriticasDTO> alertasCriticasList = new ArrayList<>();
 
-        Optional<Usuario> usuario = usuarioRepository.findByPublicId(usuarioId);
-        Optional<List<ConfiguracionObligaciones>> configuracionObligacionesList = configuracionObligacionesRepository.findByUsuarioId(usuario.get().getId());
+        Optional<List<ConfiguracionObligaciones>> configuracionObligacionesList = configuracionObligacionesRepository.findByUsuarioIdAndEstadoNot(usuarioId, "Declarado y Presentado");
 
         if(configuracionObligacionesList.isEmpty()){
             throw new RuntimeException("Error al consultar dashboard");
         }
 
-
-
         for (ConfiguracionObligaciones co: configuracionObligacionesList.get()){
-            Optional<ObligacionCliente> response = obligacionClienteRepository.findById(co.getObligacionClienteId());
+            Optional<ObligacionCliente> response = obligacionClienteRepository.findByPublicId(co.getObligacionClienteId());
             AlertasCriticasDTO alertasCriticasDTO = new AlertasCriticasDTO();
 
             DateTimeFormatter formateador = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -106,9 +103,22 @@ public class ObligacionImpl implements IObligacion {
             alertasCriticasDTO.setObligacionPago(co.getPago());
             alertasCriticasDTO.setPerido(String.valueOf(fecha.getYear()));
 
-            alertasCriticasDTO.setUrgente(response.get().isReminder1DaySent());
-            alertasCriticasDTO.setAlta(response.get().isReminder3DaysSent());
-            alertasCriticasDTO.setMedia(response.get().isReminder5DaysSent());
+            if(response.get().isReminderToDaySent()){
+                alertasCriticasDTO.setUrgente(response.get().isReminderToDaySent());
+                alertasCriticasDTO.setMensaje("Vence Hoy ");
+            }
+            if(response.get().isReminder1DaySent()){
+                alertasCriticasDTO.setUrgente(response.get().isReminder1DaySent());
+                alertasCriticasDTO.setMensaje("Vence Mañana ");
+            }
+            if(response.get().isReminder3DaysSent()){
+                alertasCriticasDTO.setAlta(response.get().isReminder3DaysSent());
+                alertasCriticasDTO.setMensaje("Vence Dentro de 3 Días");
+            }
+            if(response.get().isReminder5DaysSent()){
+                alertasCriticasDTO.setMedia(response.get().isReminder5DaysSent());
+                alertasCriticasDTO.setMensaje("Vence Dentro de 5 Días");
+            }
 
             alertasCriticasList.add(alertasCriticasDTO);
         }

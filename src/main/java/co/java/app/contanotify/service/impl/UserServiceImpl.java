@@ -37,7 +37,6 @@ public class UserServiceImpl {
             user.setFallos(0);
         }
 
-        user.setPublicId(UUID.randomUUID().toString());
         repo.save(user);
     }
 
@@ -46,7 +45,6 @@ public class UserServiceImpl {
         user.setBloqueo(0);
         user.setLockUntil(null);
 
-        user.setPublicId(UUID.randomUUID().toString());
         repo.save(user);
     }
 }

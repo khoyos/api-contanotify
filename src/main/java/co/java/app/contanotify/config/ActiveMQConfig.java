@@ -26,4 +26,9 @@ public class ActiveMQConfig {
     public Queue reminderTodayQueue() {
         return new ActiveMQQueue("reminder-today");
     }
+
+    @Bean
+    public Queue reminderStatusClientQueue() {
+        return new ActiveMQQueue("reminder-status-client");
+    }
 }

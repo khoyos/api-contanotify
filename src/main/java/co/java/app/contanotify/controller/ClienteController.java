@@ -116,6 +116,7 @@ public class ClienteController {
 
             UsuarioDTO usuarioDTO = iUsuario.findById(idCliente);
 
+            usuarioDTO.setId(idCliente);
             usuarioDTO.setNombre(client.getNombre());
             usuarioDTO.setDocumento(client.getDocumento());
             usuarioDTO.setTelefono(client.getTelefono());
@@ -142,13 +143,13 @@ public class ClienteController {
             @PathVariable String idCliente) {
         try {
 
-            UsuarioDTO usuarioDTO = iUsuario.findById(idCliente);
+            UsuarioDTO usuarioDTO = new UsuarioDTO();
+            usuarioDTO.setId(idCliente);
 
             iUsuario.delete(usuarioDTO);
 
             return ResponseEntity.status(201).body(Map.of(
-                    "message", "se consulto el cliente exitosamente",
-                    "cliente", usuarioDTO));
+                    "message", "La operacions se hizo con exito"));
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of(

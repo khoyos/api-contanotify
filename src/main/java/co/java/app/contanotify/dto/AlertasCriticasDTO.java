@@ -9,6 +9,7 @@ public class AlertasCriticasDTO {
     private boolean urgente;
     private boolean alta;
     private boolean media;
+    private String mensaje;
 
     public void setFechaVencimiento(String fechaVencimiento) {
         this.fechaVencimiento = fechaVencimiento;
@@ -73,4 +74,8 @@ public class AlertasCriticasDTO {
     public void setMedia(boolean media) {
         this.media = media;
     }
+
+    public String getMensaje() { return mensaje; }
+
+    public void setMensaje(String mensaje) { this.mensaje = mensaje; }
 }

@@ -11,6 +11,7 @@ public class ObligacionTableDTO {
     private String identidadCliente;
     private String estado;
     private String observacion;
+    private String periodo;
 
     public String getId() {
         return id;
@@ -76,4 +77,7 @@ public class ObligacionTableDTO {
 
     public void setObservacion(String observacion) { this.observacion = observacion; }
 
+    public String getPeriodo() {return periodo; }
+
+    public void setPeriodo(String periodo) { this.periodo = periodo; }
 }
