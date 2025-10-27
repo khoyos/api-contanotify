@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Seguimiento Tributario - ContaNotify</title>
+    <title>Recordatorio Tributario - ContaNotify</title>
 
     <style>
         body {
@@ -168,22 +168,22 @@
 <body>
 <div class="email-container">
     <div class="header">
-        <h1>Monitoreo de Obligación Tributaria</h1>
+        <h1>Información de Obligacion Tributaria</h1>
         <p>Asesoría Contable Profesional - ContaNotify</p>
     </div>
 
     <div class="content">
+        <!-- Variables dinámicas -->
         <p class="greeting">
-            Estimado/a <strong th:text="${contadorNombre}">Nombre del Contador</strong> 👋
+            Estimado/a <strong th:text="${clienteNombre}">Nombre del Cliente</strong> 👋
         </p>
 
         <p>
-            El sistema le recuerda que está próxima la fecha de vencimiento de una obligación tributaria de su cliente
-            <strong th:text="${clienteNombre}">Nombre del Cliente</strong>.
-        </p>
-
-        <p>
-            Mantener la puntualidad en esta gestión garantiza el cumplimiento normativo y refuerza la confianza con su cliente.
+            El sistema informa que su contador está gestionando las obligaciones tributarias correspondientes al año en curso.
+            Este mensaje es para recordarle las fechas clave para su cumplimiento. Mantener la puntualidad evita sanciones y refuerza la confianza profesional.
+            Por eso su contador <strong th:text="${contadorNombre}">Nombre del Contador</strong> esta al tanto de esta, acontinuación se le informa de manera detallada
+            su proxima obligación.
+            <br/><br/>
         </p>
 
         <div class="alert-box">
@@ -203,16 +203,9 @@
             </div>
         </div>
 
-        <div class="cta-section">
-            <a href="#" class="cta-button"
-               onclick="event.preventDefault(); alert('Accediendo al panel del contador...');">
-                Ver Detalles en el Sistema
-            </a>
-        </div>
-
         <p style="color: #555; font-size: 14px;">
-            <strong>Nota:</strong> Este recordatorio se genera automáticamente con base en la información registrada
-            en el sistema ContaNotify. Verifique siempre las fechas oficiales publicadas por la DIAN.
+            <strong>Nota:</strong> Este recordatorio se envía como apoyo a su gestión contable.
+            Confirme siempre las fechas oficiales publicadas por la DIAN.
         </p>
     </div>
 

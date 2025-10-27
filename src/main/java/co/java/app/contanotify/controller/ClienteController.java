@@ -44,10 +44,11 @@ public class ClienteController {
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String documento,
-            @RequestParam(required = false) String email) {
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String idContador) {
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by("nombre").ascending());
-            Page<UsuarioDTO> usuariosPage = iUsuario.getAll(nombre, documento, email, pageable);
+            Page<UsuarioDTO> usuariosPage = iUsuario.getAll(nombre, documento, email, pageable, idContador);
 
             return ResponseEntity.ok(Map.of(
                     "content", usuariosPage.getContent(),

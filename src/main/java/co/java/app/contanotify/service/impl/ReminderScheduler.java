@@ -1,10 +1,9 @@
 package co.java.app.contanotify.service.impl;
 
-import co.java.app.contanotify.model.Calendario;
-import co.java.app.contanotify.model.ConfiguracionCliente;
-import co.java.app.contanotify.model.ObligacionCliente;
-import co.java.app.contanotify.model.Usuario;
+import co.java.app.contanotify.dto.ObligacionDTO;
+import co.java.app.contanotify.model.*;
 import co.java.app.contanotify.repository.*;
+import co.java.app.contanotify.util.FechaLegible;
 import org.springframework.expression.spel.ast.OpAnd;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,17 +19,20 @@ public class ReminderScheduler {
     private final ConfiguracionClienteRepository configuracionClienteRepository;
     private final UsuarioRepository usuarioRepository;
     private final ReminderProducer reminderProducer;
+    private final ObligacionRepository obligacionRepository;
 
     public ReminderScheduler(ObligacionClienteRepository obligacionClienteRepository,
                              ReminderProducer reminderProducer,
                              CalendarioRepository calendarioRepository,
                              ConfiguracionClienteRepository configuracionClienteRepository,
-                             UsuarioRepository usuarioRepository) {
+                             UsuarioRepository usuarioRepository,
+                             ObligacionRepository obligacionRepository) {
         this.obligacionClienteRepository = obligacionClienteRepository;
         this.reminderProducer = reminderProducer;
         this.calendarioRepository = calendarioRepository;
         this.configuracionClienteRepository= configuracionClienteRepository;
         this.usuarioRepository = usuarioRepository;
+        this.obligacionRepository = obligacionRepository;
     }
 
     // Se ejecuta todos los días a las 8am
@@ -105,6 +107,7 @@ public class ReminderScheduler {
 
     private void sendReminders(ObligacionCliente obligacionCliente, int days) {
        Optional<Calendario> calendario = calendarioRepository.findById(String.valueOf(obligacionCliente.getCalendarioId()));
+       Optional<Obligacion> obligacion = obligacionRepository.findById(calendario.get().getObligacionId());
        Optional<ConfiguracionCliente> configuracionCliente = configuracionClienteRepository.findById(obligacionCliente.getConfiguracionClienteId().toString());
        Optional<Usuario> usuarioCliente = usuarioRepository.findById(String.valueOf(configuracionCliente.get().getUsuarioClienteId()));
         Optional<Usuario> usuarioContador = usuarioRepository.findById(String.valueOf(configuracionCliente.get().getUsuarioId()));
@@ -112,39 +115,55 @@ public class ReminderScheduler {
        boolean isNotificarCliente = configuracionCliente.get().isNotificarCliente();
        boolean isNotificarContador = configuracionCliente.get().isNotificarContador();
 
+       String colorClass = switch (days) {
+            case 0, 1 -> "obligation-red";
+            case 3 -> "obligation-orange";
+            case 5 -> "obligation-yellow";
+            default -> "";
+       };
+
        if(isNotificarCliente){
-           Map<String, Object> request = new HashMap<>();
+           Map<String, String> request = new HashMap<>();
 
            String msg = "Recordatorio: " + calendario.get().getNombre() + " vence el " + obligacionCliente.getFecha();
 
            request.put("to", usuarioCliente.get().getEmail());
            request.put("message", msg);
-           request.put("name", usuarioCliente.get().getNombre());
-           request.put("fecha", obligacionCliente.getFecha());
-           if(days == 0){
-               request.put("hoy", "Hoy es el día");
-           }else{
-               request.put("dias", days);
-           }
+           request.put("contadorNombre", usuarioContador.get().getNombre());
+           request.put("clienteNombre", usuarioCliente.get().getNombre());
+           String fechaLegible = FechaLegible.convertirFechaISOPorFechaLegible(obligacionCliente.getFecha().toString());
+           request.put("fecha", fechaLegible.replace(",",""));
+           request.put("renta", obligacion.get().getName());
+           request.put("pago", calendario.get().getNombre());
+
+           request.put("dias", String.valueOf(days));
+           request.put("colorClass", colorClass);
+
+
+           request.put("template", "reminder-for-client");
 
            reminderProducer.sendReminder(request, days);
        }
 
         if(isNotificarContador){
-            Map<String, Object> request = new HashMap<>();
+            Map<String, String> request = new HashMap<>();
 
             String msg = "Recordatorio: " + calendario.get().getNombre() + " vence el " + obligacionCliente.getFecha();
 
             request.put("to", usuarioContador.get().getEmail());
             request.put("message", msg);
-            request.put("name", usuarioContador.get().getNombre());
-            request.put("fecha", obligacionCliente.getFecha());
+            request.put("contadorNombre", usuarioContador.get().getNombre());
+            request.put("clienteNombre", usuarioCliente.get().getNombre());
+            String fechaLegible = FechaLegible.convertirFechaISOPorFechaLegible(obligacionCliente.getFecha().toString());
+            request.put("fecha", fechaLegible.replace(",",""));
+            request.put("renta", obligacion.get().getName());
+            request.put("pago", calendario.get().getNombre());
 
-            if(days == 0){
-                request.put("hoy", "Hoy es el día");
-            }else{
-                request.put("dias", days);
-            }
+            request.put("dias", String.valueOf(days));
+            request.put("colorClass", colorClass);
+
+
+            request.put("template", "reminder-for-accountant");
 
             reminderProducer.sendReminder(request, days);
         }

@@ -31,7 +31,7 @@ public class ReminderProducer {
         this.reminderStatusClientQueue = reminderStatusClientQueue;
     }
 
-    public void sendReminder(Map<String,Object> payload, int days) {
+    public void sendReminder(Map<String,String> payload, int days) {
         //System.out.println("* sendReminder");
         switch (days) {
             case 5 -> jmsTemplate.convertAndSend(reminder5DaysQueue, payload.toString());

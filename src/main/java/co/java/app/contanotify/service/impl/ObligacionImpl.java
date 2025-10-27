@@ -106,21 +106,28 @@ public class ObligacionImpl implements IObligacion {
             if(response.get().isReminderToDaySent()){
                 alertasCriticasDTO.setUrgente(response.get().isReminderToDaySent());
                 alertasCriticasDTO.setMensaje("Vence Hoy ");
+                alertasCriticasList.add(alertasCriticasDTO);
+                continue;
             }
             if(response.get().isReminder1DaySent()){
                 alertasCriticasDTO.setUrgente(response.get().isReminder1DaySent());
                 alertasCriticasDTO.setMensaje("Vence Mañana ");
+                alertasCriticasList.add(alertasCriticasDTO);
+                continue;
             }
             if(response.get().isReminder3DaysSent()){
                 alertasCriticasDTO.setAlta(response.get().isReminder3DaysSent());
                 alertasCriticasDTO.setMensaje("Vence Dentro de 3 Días");
+                alertasCriticasList.add(alertasCriticasDTO);
+                continue;
             }
             if(response.get().isReminder5DaysSent()){
                 alertasCriticasDTO.setMedia(response.get().isReminder5DaysSent());
                 alertasCriticasDTO.setMensaje("Vence Dentro de 5 Días");
+                alertasCriticasList.add(alertasCriticasDTO);
+                continue;
             }
 
-            alertasCriticasList.add(alertasCriticasDTO);
         }
 
         return alertasCriticasList;

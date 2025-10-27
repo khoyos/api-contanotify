@@ -19,21 +19,21 @@ public class ReminderConsumers {
     public void process5DaysReminder(String payload) {
         System.out.println("[5 días antes] Enviando recordatorio: " + payload);
         // Aquí llamas al servicio de correo
-        Map<String, String> map = getStringToMap(payload);
+        Map<String, String> map = getStringToMap(payload.replace("{","").replace("}",""));
         sendEmailAccountant(map);
     }
 
     @JmsListener(destination = "reminder-3days")
     public void process3DaysReminder(String payload) {
         System.out.println("[3 días antes] Enviando recordatorio: " + payload);
-        Map<String, String> map = getStringToMap(payload);
+        Map<String, String> map = getStringToMap(payload.replace("{","").replace("}",""));
         sendEmailAccountant(map);
     }
 
     @JmsListener(destination = "reminder-1day")
     public void process1DayReminder(String payload) {
         System.out.println("[1 día antes] Enviando recordatorio: " + payload);
-        Map<String, String> map = getStringToMap(payload);
+        Map<String, String> map = getStringToMap(payload.replace("{","").replace("}",""));
         sendEmailAccountant(map);
     }
 
@@ -55,10 +55,17 @@ public class ReminderConsumers {
         System.out.println("payload: "+ payload);
         try {
             Map<String, Object> variables = new HashMap<>();
-            variables.put("name",payload.get("name"));
+            variables.put("contadorNombre",payload.get("contadorNombre"));
+            variables.put("clienteNombre",payload.get("clienteNombre"));
             variables.put("fecha",payload.get("fecha"));
-            emailSender.sendHtmlEmail(payload.get("to"),"Contanotify te recuerda estar pendiente de tus obligaciones tributarias","reminder-for-accountant",variables);
-        } catch (MessagingException e) {
+            variables.put("renta", payload.get("renta"));
+            variables.put("pago", payload.get("pago"));
+            variables.put("colorClass", payload.get("colorClass"));
+            variables.put("dias", payload.get("dias").equals("0")?"Es Hoy": payload.get("dias"));
+
+            variables.toString();
+            emailSender.sendHtmlEmail(payload.get("to"),"Contanotify te recuerda estar pendiente de tus obligaciones tributarias",payload.get("template"),variables);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

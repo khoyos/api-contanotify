@@ -9,6 +9,7 @@ public class UsuarioDTO {
     private String email;
     private String tipoDocumento;
     private String razonSocial;
+    private String usuarioContadorId;
     private boolean estado;
 
     public String getId() {
@@ -70,4 +71,8 @@ public class UsuarioDTO {
     public String getRazonSocial() { return razonSocial; }
 
     public void setRazonSocial(String razonSocial) { this.razonSocial = razonSocial; }
+
+    public String getUsuarioContadorId() { return usuarioContadorId; }
+
+    public void setUsuarioContadorId(String usuarioContadorId) { this.usuarioContadorId = usuarioContadorId; }
 }

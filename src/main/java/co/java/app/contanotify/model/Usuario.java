@@ -18,6 +18,7 @@ public class Usuario {
     private String telefono;
     private boolean estado;
     private ObjectId tipoUsuarioId;
+    private String usuarioContadorId;
     private String razonSocial;
     private String tipoDocumento;
     private boolean active;
@@ -150,5 +151,9 @@ public class Usuario {
     public String getPublicId() { return publicId; }
 
     public void setPublicId(String publicId) { this.publicId = publicId; }
+
+    public String getUsuarioContadorId() { return usuarioContadorId; }
+
+    public void setUsuarioContadorId(String usuarioContadorId) { this.usuarioContadorId = usuarioContadorId; }
 
 }

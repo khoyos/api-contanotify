@@ -54,6 +54,7 @@ public class UsuarioImpl implements IUsuario {
         usuario.setTipoDocumento(usuarioDTO.getTipoDocumento().toLowerCase());
         usuario.setDocumento(usuarioDTO.getDocumento());
         usuario.setTelefono(usuarioDTO.getTelefono());
+        usuario.setUsuarioContadorId(usuarioDTO.getUsuarioContadorId());
         usuario.setActive(true);
 
         String TIPO_USUARIO = "cliente";
@@ -79,7 +80,7 @@ public class UsuarioImpl implements IUsuario {
     }
 
     @Override
-    public Page<UsuarioDTO> getAll(String nombre, String documento, String email, Pageable pageable) {
+    public Page<UsuarioDTO> getAll(String nombre, String documento, String email, Pageable pageable, String idContador) {
         Query query = new Query().with(pageable);
         List<Criteria> criterios = new ArrayList<>();
 
@@ -96,7 +97,7 @@ public class UsuarioImpl implements IUsuario {
 
         String id = tipoUsuarioRepository.findByName("cliente").get().getId();
         query.addCriteria(Criteria.where("tipoUsuarioId").is(new ObjectId(id)));
-
+        query.addCriteria(Criteria.where("usuarioContadorId").is(idContador));
         //Solo usuarios activos
         query.addCriteria(Criteria.where("active").is(true));
 

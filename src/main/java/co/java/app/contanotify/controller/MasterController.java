@@ -144,6 +144,7 @@ public class MasterController {
     public ResponseEntity<?> getDashboard(@RequestParam(required = true) String userId) {
         List<AlertasCriticasDTO> obligaciones = iObligacion.dashboard(userId);
 
+
         return ResponseEntity.status(201).body(Map.of(
                 "message", "Se ha consultado obligaciones correctamente",
                 "alertas", obligaciones

@@ -9,7 +9,7 @@ public interface IUsuario {
 
     UsuarioDTO save(UsuarioDTO usuarioDTO);
 
-    Page<UsuarioDTO> getAll(String nombre, String documento, String email, Pageable pageable);
+    Page<UsuarioDTO> getAll(String nombre, String documento, String email, Pageable pageable, String idContador);
 
     UsuarioDTO findByTipoDocumentoAndDocumento(String tipoDocumento, String documento);
 

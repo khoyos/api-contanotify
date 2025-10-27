@@ -16,6 +16,9 @@ spring:
           starttls:
             enable: true
             required: true
+          ssl:
+            strust:smtp.gmail.com
+        debug: true
         transport:
           protocol: smtp
   activemq:
