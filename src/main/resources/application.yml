@@ -7,7 +7,7 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: lvillarrealcool@gmail.com
+    username: contanotifytest@gmail.com
     password: ${EMAIL_PASS_KEY}
     properties:
       mail:

@@ -142,12 +142,15 @@ public class MasterController {
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDashboard(@RequestParam(required = true) String userId) {
-        List<AlertasCriticasDTO> obligaciones = iObligacion.dashboard(userId);
-
+        List<AlertasCriticasDTO> obligaciones = iObligacion.dashboardAlertas(userId);
+        CardGeneralDTO cardgenerales = iObligacion.dashboardCardGeneral(userId);
+        List<CorporativoPorEntidadGobiernoDTO> corporativoPorEntidades = iObligacion.dashboardCorporativoPorEntidad(userId);
 
         return ResponseEntity.status(201).body(Map.of(
                 "message", "Se ha consultado obligaciones correctamente",
-                "alertas", obligaciones
+                "alertas", obligaciones,
+                "estadisticas", cardgenerales,
+                "corporativoPorEntidad", corporativoPorEntidades
         ));
     }
 }

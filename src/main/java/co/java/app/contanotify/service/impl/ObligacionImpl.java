@@ -1,6 +1,8 @@
 package co.java.app.contanotify.service.impl;
 
 import co.java.app.contanotify.dto.AlertasCriticasDTO;
+import co.java.app.contanotify.dto.CardGeneralDTO;
+import co.java.app.contanotify.dto.CorporativoPorEntidadGobiernoDTO;
 import co.java.app.contanotify.dto.ObligacionDTO;
 import co.java.app.contanotify.model.ConfiguracionObligaciones;
 import co.java.app.contanotify.model.Obligacion;
@@ -11,14 +13,15 @@ import co.java.app.contanotify.repository.ObligacionClienteRepository;
 import co.java.app.contanotify.repository.ObligacionRepository;
 import co.java.app.contanotify.repository.UsuarioRepository;
 import co.java.app.contanotify.service.IObligacion;
+import co.java.app.contanotify.util.FechaLegible;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class ObligacionImpl implements IObligacion {
@@ -81,7 +84,7 @@ public class ObligacionImpl implements IObligacion {
     }
 
     @Override
-    public List<AlertasCriticasDTO> dashboard(String usuarioId) {
+    public List<AlertasCriticasDTO> dashboardAlertas(String usuarioId) {
         List<AlertasCriticasDTO> alertasCriticasList = new ArrayList<>();
 
         Optional<List<ConfiguracionObligaciones>> configuracionObligacionesList = configuracionObligacionesRepository.findByUsuarioIdAndEstadoNot(usuarioId, "Declarado y Presentado");
@@ -102,6 +105,14 @@ public class ObligacionImpl implements IObligacion {
             alertasCriticasDTO.setObligacionRenta(co.getRenta());
             alertasCriticasDTO.setObligacionPago(co.getPago());
             alertasCriticasDTO.setPerido(String.valueOf(fecha.getYear()));
+
+            if(fecha.isBefore(LocalDate.now())){
+                alertasCriticasDTO.setVencida(true);
+                String diasPasados = FechaLegible.formatoPeriodo(fecha, LocalDate.now());
+                alertasCriticasDTO.setMensaje("Vencido: ".concat(diasPasados));
+                alertasCriticasList.add(alertasCriticasDTO);
+                continue;
+            }
 
             if(response.get().isReminderToDaySent()){
                 alertasCriticasDTO.setUrgente(response.get().isReminderToDaySent());
@@ -132,4 +143,96 @@ public class ObligacionImpl implements IObligacion {
 
         return alertasCriticasList;
     }
+
+    @Override
+    public CardGeneralDTO dashboardCardGeneral(String usuarioId) {
+        CardGeneralDTO response = new CardGeneralDTO();
+
+        Optional<List<ConfiguracionObligaciones>> obligacionesPorHacerList = configuracionObligacionesRepository.findByUsuarioIdAndEstado(usuarioId, "Por Hacer");
+        if(obligacionesPorHacerList.isEmpty()){
+            response.setPorHacer(0);
+        }
+        response.setPorHacer(obligacionesPorHacerList.get().size());
+
+        Optional<List<ConfiguracionObligaciones>> obligacionesElaboracionList = configuracionObligacionesRepository.findByUsuarioIdAndEstado(usuarioId, "Elaboración");
+        if(obligacionesElaboracionList.isEmpty()){
+            response.setElaboracion(0);
+        }
+        response.setElaboracion(obligacionesElaboracionList.get().size());
+
+        Optional<List<ConfiguracionObligaciones>> obligacionesPendientePorDocumentosList = configuracionObligacionesRepository.findByUsuarioIdAndEstado(usuarioId, "Pendiente por Documentos.");
+        if(obligacionesPendientePorDocumentosList.isEmpty()){
+            response.setPendientePorDocs(0);
+        }
+        response.setPendientePorDocs(obligacionesPendientePorDocumentosList.get().size());
+
+        Optional<List<ConfiguracionObligaciones>> obligacionesDeclaradoPresentadoList = configuracionObligacionesRepository.findByUsuarioIdAndEstado(usuarioId, "Declarado y Presentado");
+        if(obligacionesDeclaradoPresentadoList.isEmpty()){
+            response.setDeclaradoPresentado(0);
+        }
+        response.setDeclaradoPresentado(obligacionesDeclaradoPresentadoList.get().size());
+
+        Optional<List<ConfiguracionObligaciones>> obligacionesList = configuracionObligacionesRepository.findByUsuarioIdAndEstadoNot(usuarioId, "Declarado y Presentado");
+        int totalVencidas = 0;
+        if(obligacionesList.isEmpty()){
+            response.setVencidas(totalVencidas);
+        }
+
+        for (ConfiguracionObligaciones co: obligacionesList.get()) {
+            DateTimeFormatter formateador = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            LocalDate fecha = LocalDate.parse(co.getFecha(), formateador);
+
+            if (fecha.isBefore(LocalDate.now())) {
+                totalVencidas++;
+                continue;
+            }
+        }
+        response.setVencidas(totalVencidas);
+
+        return response;
+    }
+
+    @Override
+    public List<CorporativoPorEntidadGobiernoDTO> dashboardCorporativoPorEntidad(String usuarioId) {
+
+        Optional<List<ConfiguracionObligaciones>> obligacionesPorHacerList =
+                configuracionObligacionesRepository.findByUsuarioId(usuarioId);
+
+        // Si no hay obligaciones, devolvemos los 12 meses con valor 0
+        if (obligacionesPorHacerList.isEmpty() || obligacionesPorHacerList.get().isEmpty()) {
+            return IntStream.rangeClosed(1, 12)
+                    .mapToObj(mes -> {
+                        CorporativoPorEntidadGobiernoDTO dto = new CorporativoPorEntidadGobiernoDTO();
+                        dto.setName(FechaLegible.nombreMes(mes));
+                        dto.setValue(0);
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        List<ConfiguracionObligaciones> obligaciones = obligacionesPorHacerList.get();
+
+        // Agrupar por mes (extraído de la fecha)
+        Map<Integer, Long> conteoPorMes = obligaciones.stream()
+                .filter(o -> o.getFecha() != null && !o.getFecha().isEmpty())
+                .collect(Collectors.groupingBy(
+                        o -> FechaLegible.obtenerMes(o.getFecha()), // debe retornar 1-12
+                        Collectors.counting()
+                ));
+
+        // Crear lista con los 12 meses, asignando 0 si no existe, y ordenada enero→diciembre
+        return IntStream.rangeClosed(1, 12)
+                .mapToObj(mes -> {
+                    CorporativoPorEntidadGobiernoDTO dto = new CorporativoPorEntidadGobiernoDTO();
+                    dto.setName(FechaLegible.nombreMesAbreviado(mes)); // Ej: Enero, Febrero, etc.
+                    dto.setValue(conteoPorMes.getOrDefault(mes, 0L).intValue());
+                    return dto;
+                })
+                // El .sorted no es estrictamente necesario porque ya generamos en orden 1..12,
+                // pero lo dejo comentado por si prefieres asegurar el orden por nombre:
+                // .sorted(Comparator.comparingInt(e -> FechaLegible.obtenerNumeroMesPorNombre(e.getName())))
+                .collect(Collectors.toList());
+    }
+
+
 }

@@ -57,7 +57,8 @@ public class ObligacionClienteController {
             @RequestParam(required = false) String entidad,
             @RequestParam(required = false) String renta,
             @RequestParam(required = false) String pago,
-            @RequestParam(required = false) String fecha) {
+            @RequestParam(required = false) String fecha,
+            @RequestParam(required = false) String estado) {
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by("nombre").ascending());
             Map<String, Object> filters = new HashMap<>();
@@ -67,6 +68,7 @@ public class ObligacionClienteController {
             filters.put("renta", renta);
             filters.put("pago", pago);
             filters.put("fecha", fecha);
+            filters.put("estado", estado);
 
             Page<ObligacionTableDTO> usuariosPage = iObligacionCliente.getAll(filters, pageable);
 

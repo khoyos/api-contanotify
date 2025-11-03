@@ -1,15 +1,12 @@
 package co.java.app.contanotify.controller;
 
 import co.java.app.contanotify.dto.ConfigurarClienteDTO;
-import co.java.app.contanotify.dto.ObligacionClienteDTO;
-import co.java.app.contanotify.dto.TipoUsuarioDTO;
 import co.java.app.contanotify.service.IConfiguracionCliente;
 import co.java.app.contanotify.service.IObligacionCliente;
 import co.java.app.contanotify.service.impl.ConfigurarClienteImpl;
 import co.java.app.contanotify.service.impl.EmailServiceImpl;
 import co.java.app.contanotify.service.impl.ObligacionClienteImpl;
-import co.java.app.contanotify.service.impl.WhatsAppTwilioService;
-import jakarta.mail.MessagingException;
+import co.java.app.contanotify.service.impl.WhatsappService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,14 +25,14 @@ public class ConfigurarClienteController {
     private final IObligacionCliente iObligacionCliente;
 
     private final EmailServiceImpl emailServiceImpl;
-    private final WhatsAppTwilioService whatsAppTwilioService;
+    private final WhatsappService whatsAppService;
 
     public ConfigurarClienteController(ConfigurarClienteImpl configurarClienteImpl,
                                        ObligacionClienteImpl obligacionClienteImpl,
-                                       WhatsAppTwilioService whatsAppTwilioService,
+                                       WhatsappService whatsAppService,
                                        EmailServiceImpl emailServiceImpl) {
         this.iConfiguracionCliente = configurarClienteImpl;
-        this.whatsAppTwilioService = whatsAppTwilioService;
+        this.whatsAppService = whatsAppService;
         this.iObligacionCliente = obligacionClienteImpl;
         this.emailServiceImpl = emailServiceImpl;
     }

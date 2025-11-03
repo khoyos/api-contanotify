@@ -17,4 +17,6 @@ public interface ConfiguracionObligacionesRepository extends MongoRepository<Con
 
     Optional<List<ConfiguracionObligaciones>> findByUsuarioIdAndEstadoNot(String usuarioId, String estado);
 
+    Optional<List<ConfiguracionObligaciones>> findByUsuarioIdAndEstado(String usuarioId, String estado);
+
 }

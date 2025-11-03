@@ -39,11 +39,12 @@ public class UsuarioImpl implements IUsuario {
     @Override
     public UsuarioDTO save(UsuarioDTO usuarioDTO) {
 
-        if (usuarioRepository.findByDocumento(usuarioDTO.getDocumento()).isPresent()) {
+        if (usuarioRepository.findByTipoDocumentoAndDocumentoAndUsuarioContadorId(
+                usuarioDTO.getTipoDocumento(), usuarioDTO.getDocumento(), usuarioDTO.getUsuarioContadorId()).isPresent()) {
             throw new RuntimeException("Ya existe un cliente con este documento");
         }
 
-        if (usuarioRepository.findByEmail(usuarioDTO.getEmail()).isPresent()) {
+        if (usuarioRepository.findByEmailAndUsuarioContadorId(usuarioDTO.getEmail(), usuarioDTO.getUsuarioContadorId()).isPresent()) {
             throw new RuntimeException("Error al acrear usuario");
         }
 

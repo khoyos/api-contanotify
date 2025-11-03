@@ -85,23 +85,29 @@ public class ObligacionClienteImpl implements IObligacionCliente {
             for(Fecha fecha: calendario.getFechas()){
 
                 if(fecha.getNit().contains("independiente")){
+                    Optional<List<ObligacionCliente>> optObligacionCliente = obligacionClienteRepository.findByConfiguracionClienteIdAndCalendarioIdAndFecha(new ObjectId(configuracionCliente.get().getId()),
+                            new ObjectId(calendario.getId()),
+                            fecha.getFecha());
+                    if(!optObligacionCliente.get().isEmpty()){
+                        continue;
+                    }else{
+                        ObligacionCliente obligacionCliente = new ObligacionCliente();
 
-                    ObligacionCliente obligacionCliente = new ObligacionCliente();
+                        obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
+                        obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
+                        obligacionCliente.setFecha(fecha.getFecha());
 
-                    obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
-                    obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
-                    obligacionCliente.setFecha(fecha.getFecha());
+                        obligacionCliente.setPublicId(UUID.randomUUID().toString());
+                        obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
 
-                    obligacionCliente.setPublicId(UUID.randomUUID().toString());
-                    obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
+                        HashMap<String, Object> response = new HashMap<>();
+                        response.put("fecha", fecha.getFecha());
+                        response.put("obligacionClienteId", obligacionCliente.getPublicId());
+                        response.put("nombrePago", calendario.getNombre());
+                        response.put("periodo", calendario.getCalendario());
 
-                    HashMap<String, Object> response = new HashMap<>();
-                    response.put("fecha", fecha.getFecha());
-                    response.put("obligacionClienteId", obligacionCliente.getPublicId());
-                    response.put("nombrePago", calendario.getNombre());
-                    response.put("periodo", calendario.getCalendario());
-
-                    responses.add(response);
+                        responses.add(response);
+                    }
                 }
 
                 if(fecha.getNit().contains("-")){
@@ -114,50 +120,61 @@ public class ObligacionClienteImpl implements IObligacionCliente {
 
                     if(primera.equals(dosUltimosDigitosNit)||segunda.equals(dosUltimosDigitosNit)){
                         // registrar la fecha
-                        ObligacionCliente obligacionCliente = new ObligacionCliente();
+                        Optional<List<ObligacionCliente>> optObligacionCliente = obligacionClienteRepository.findByConfiguracionClienteIdAndCalendarioIdAndFecha(new ObjectId(configuracionCliente.get().getId()),
+                                new ObjectId(calendario.getId()),
+                                fecha.getFecha());
+                        if(!optObligacionCliente.get().isEmpty()){
+                            continue;
+                        }else {
+                            ObligacionCliente obligacionCliente = new ObligacionCliente();
 
-                        obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
-                        obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
-                        obligacionCliente.setFecha(fecha.getFecha());
+                            obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
+                            obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
+                            obligacionCliente.setFecha(fecha.getFecha());
 
-                        obligacionCliente.setPublicId(UUID.randomUUID().toString());
-                        obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
+                            obligacionCliente.setPublicId(UUID.randomUUID().toString());
+                            obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
 
-                        HashMap<String, Object> response = new HashMap<>();
-                        response.put("fecha", fecha.getFecha());
-                        response.put("obligacionClienteId", obligacionCliente.getPublicId());
-                        response.put("nombrePago", calendario.getNombre());
-                        response.put("periodo", calendario.getCalendario());
+                            HashMap<String, Object> response = new HashMap<>();
+                            response.put("fecha", fecha.getFecha());
+                            response.put("obligacionClienteId", obligacionCliente.getPublicId());
+                            response.put("nombrePago", calendario.getNombre());
+                            response.put("periodo", calendario.getCalendario());
 
-                        responses.add(response);
-
+                            responses.add(response);
+                        }
                     }
                 }else{
                     //es de un solo nit
                     if(ultimoDigitoNit.equals(fecha.getNit())){
                         //registrar la fecha
-                        ObligacionCliente obligacionCliente = new ObligacionCliente();
+                        Optional<List<ObligacionCliente>> optObligacionCliente = obligacionClienteRepository.findByConfiguracionClienteIdAndCalendarioIdAndFecha(new ObjectId(configuracionCliente.get().getId()),
+                                new ObjectId(calendario.getId()),
+                                fecha.getFecha());
+                        if(!optObligacionCliente.get().isEmpty()){
+                            continue;
+                        }else {
+                            ObligacionCliente obligacionCliente = new ObligacionCliente();
 
-                        obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
-                        obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
-                        obligacionCliente.setFecha(fecha.getFecha());
+                            obligacionCliente.setConfiguracionClienteId(new ObjectId(configuracionCliente.get().getId()));
+                            obligacionCliente.setCalendarioId(new ObjectId(calendario.getId()));
+                            obligacionCliente.setFecha(fecha.getFecha());
 
-                        obligacionCliente.setPublicId(UUID.randomUUID().toString());
-                        obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
+                            obligacionCliente.setPublicId(UUID.randomUUID().toString());
+                            obligacionCliente = obligacionClienteRepository.save(obligacionCliente);
 
-                        HashMap<String, Object> response = new HashMap<>();
-                        response.put("fecha", fecha.getFecha());
-                        response.put("obligacionClienteId", obligacionCliente.getPublicId());
-                        response.put("nombrePago", calendario.getNombre());
-                        response.put("periodo", calendario.getCalendario());
+                            HashMap<String, Object> response = new HashMap<>();
+                            response.put("fecha", fecha.getFecha());
+                            response.put("obligacionClienteId", obligacionCliente.getPublicId());
+                            response.put("nombrePago", calendario.getNombre());
+                            response.put("periodo", calendario.getCalendario());
 
-                        responses.add(response);
-
+                            responses.add(response);
+                        }
                     }
                 }
             }
         }
-
 
         return responses;
     }
@@ -174,6 +191,7 @@ public class ObligacionClienteImpl implements IObligacionCliente {
         String renta = (String) filters.getOrDefault("renta", "");
         String pago = (String) filters.getOrDefault("pago", "");
         String fecha = (String) filters.getOrDefault("fecha", "");
+        String estado = (String) filters.getOrDefault("estado", "");
 
         // 🔍 Agregar filtros dinámicos (regex = búsqueda parcial, 'i' = case insensitive)
 
@@ -194,6 +212,9 @@ public class ObligacionClienteImpl implements IObligacionCliente {
         }
         if (fecha!=null && !fecha.isBlank()) {
             criterios.add(Criteria.where("fecha").regex(fecha, "i"));
+        }
+        if (estado!=null && !estado.isBlank()) {
+            criterios.add(Criteria.where("estado").regex(estado, "i"));
         }
 
         // Aplica todos los filtros si existen
@@ -240,7 +261,7 @@ public class ObligacionClienteImpl implements IObligacionCliente {
         configuracionObligaciones.setPago(configuracionObligacionesDTO.getPago());
         configuracionObligaciones.setFecha(configuracionObligacionesDTO.getFecha());
         configuracionObligaciones.setObligacionClienteId(configuracionObligacionesDTO.getObligacionClienteId());
-        configuracionObligaciones.setEstado("");
+        configuracionObligaciones.setEstado("Por Hacer");
         configuracionObligaciones.setObservacion("");
         configuracionObligaciones.setPeriodo(configuracionObligacionesDTO.getPeriodo());
 
