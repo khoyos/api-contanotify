@@ -1,9 +1,6 @@
 package co.java.app.contanotify.service;
 
-import co.java.app.contanotify.dto.AlertasCriticasDTO;
-import co.java.app.contanotify.dto.CardGeneralDTO;
-import co.java.app.contanotify.dto.CorporativoPorEntidadGobiernoDTO;
-import co.java.app.contanotify.dto.ObligacionDTO;
+import co.java.app.contanotify.dto.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,4 +12,6 @@ public interface IObligacion {
     List<AlertasCriticasDTO> dashboardAlertas(String usuarioId);
     CardGeneralDTO dashboardCardGeneral(String usuarioId);
     List<CorporativoPorEntidadGobiernoDTO> dashboardCorporativoPorEntidad(String usuarioId);
+    List<ClientesConRentaPorMesDTO> dashboardCorporativoClientesConRentaPorMes(String usuarioId);
+    List<RentasPorAnioDTO> dashboardCorporativoRentasPorAnio(String usuarioId);
 }

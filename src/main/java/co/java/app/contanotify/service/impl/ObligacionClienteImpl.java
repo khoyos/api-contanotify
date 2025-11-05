@@ -9,9 +9,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -179,56 +177,49 @@ public class ObligacionClienteImpl implements IObligacionCliente {
         return responses;
     }
 
-    @Override
-    public Page<ObligacionTableDTO> getAll(Map<String, Object> filters, Pageable pageable) {
-        Query query = new Query().with(pageable);
+    public Page<ObligacionTableDTO> getAll(Map<String, Object> filters, Pageable pageable, String idContador) {
         List<Criteria> criterios = new ArrayList<>();
 
-        // Obtener valores de filtros (evita NPE)
-        String identidad = (String) filters.getOrDefault("identidadCliente", "");
-        String nombre = (String) filters.getOrDefault("nombre", "");
-        String entidad = (String) filters.getOrDefault("entidad", "");
-        String renta = (String) filters.getOrDefault("renta", "");
-        String pago = (String) filters.getOrDefault("pago", "");
-        String fecha = (String) filters.getOrDefault("fecha", "");
-        String estado = (String) filters.getOrDefault("estado", "");
+        // 🔒 Extraer y limpiar valores de filtros de forma segura
+        String identidad = getSafeString(filters.get("identidadCliente"));
+        String nombre = getSafeString(filters.get("nombre"));
+        String entidad = getSafeString(filters.get("entidad"));
+        String renta = getSafeString(filters.get("renta"));
+        String pago = getSafeString(filters.get("pago"));
+        String fecha = getSafeString(filters.get("fecha"));
+        String estado = getSafeString(filters.get("estado"));
 
-        // 🔍 Agregar filtros dinámicos (regex = búsqueda parcial, 'i' = case insensitive)
+        // ✅ Aplicar criterios solo cuando no están vacíos
+        if (!identidad.isEmpty()) criterios.add(Criteria.where("identidadCliente").regex(identidad, "i"));
+        if (!nombre.isEmpty()) criterios.add(Criteria.where("nombreCliente").regex(nombre, "i"));
+        if (!entidad.isEmpty()) criterios.add(Criteria.where("entidad").regex(entidad, "i"));
+        if (!renta.isEmpty()) criterios.add(Criteria.where("renta").regex(renta, "i"));
+        if (!pago.isEmpty()) criterios.add(Criteria.where("pago").regex(pago, "i"));
+        if (!fecha.isEmpty()) criterios.add(Criteria.where("fecha").regex(fecha, "i"));
+        if (!estado.isEmpty()) criterios.add(Criteria.where("estado").regex(estado, "i"));
 
-        if (identidad!=null && !identidad.isBlank()) {
-            criterios.add(Criteria.where("identidadCliente").regex(identidad, "i"));
-        }
-        if (nombre!=null && !nombre.isBlank()) {
-            criterios.add(Criteria.where("nombreCliente").regex(nombre, "i"));
-        }
-        if (entidad != null && !entidad.isBlank()) {
-            criterios.add(Criteria.where("entidad").regex(entidad, "i"));
-        }
-        if (renta!=null && !renta.isBlank()) {
-            criterios.add(Criteria.where("renta").regex(renta, "i"));
-        }
-        if (pago!=null && !pago.isBlank()) {
-            criterios.add(Criteria.where("pago").regex(pago, "i"));
-        }
-        if (fecha!=null && !fecha.isBlank()) {
-            criterios.add(Criteria.where("fecha").regex(fecha, "i"));
-        }
-        if (estado!=null && !estado.isBlank()) {
-            criterios.add(Criteria.where("estado").regex(estado, "i"));
-        }
-
-        // Aplica todos los filtros si existen
+        // 📋 Construir query
+        Query query = new Query();
+        query.addCriteria(Criteria.where("usuarioId").is(idContador));
         if (!criterios.isEmpty()) {
             query.addCriteria(new Criteria().andOperator(criterios.toArray(new Criteria[0])));
         }
 
-        //  Ejecuta la consulta
-        List<ConfiguracionObligaciones> resultados = mongoTemplate.find(query, ConfiguracionObligaciones.class);
-
-        //  Conteo total para la paginación
+        // 🧮 Conteo total
         long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), ConfiguracionObligaciones.class);
 
-        // Mapear la entidad al DTO manualmente
+        // 🧭 Paginación + orden estable
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.ASC, "fecha").and(Sort.by("_id"))
+        );
+        query.with(sortedPageable);
+
+        // 🔍 Consulta paginada
+        List<ConfiguracionObligaciones> resultados = mongoTemplate.find(query, ConfiguracionObligaciones.class);
+
+        // 🧱 Mapear DTOs
         List<ObligacionTableDTO> dtos = resultados.stream().map(item -> {
             ObligacionTableDTO dto = new ObligacionTableDTO();
             dto.setId(item.getPublicId().toString());
@@ -244,8 +235,17 @@ public class ObligacionClienteImpl implements IObligacionCliente {
             return dto;
         }).toList();
 
-        // Retorna la página final
-        return new PageImpl<>(dtos, pageable, total);
+        // 📤 Retornar la página correctamente
+        return new PageImpl<>(dtos, sortedPageable, total);
+    }
+
+    /**
+     * 🔧 Utilidad para evitar nulls o espacios vacíos en filtros
+     */
+    private String getSafeString(Object value) {
+        if (value == null) return "";
+        String str = value.toString().trim();
+        return str.isBlank() ? "" : str;
     }
 
     @Override

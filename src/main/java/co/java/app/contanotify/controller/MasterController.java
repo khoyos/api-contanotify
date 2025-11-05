@@ -145,12 +145,16 @@ public class MasterController {
         List<AlertasCriticasDTO> obligaciones = iObligacion.dashboardAlertas(userId);
         CardGeneralDTO cardgenerales = iObligacion.dashboardCardGeneral(userId);
         List<CorporativoPorEntidadGobiernoDTO> corporativoPorEntidades = iObligacion.dashboardCorporativoPorEntidad(userId);
+        List<ClientesConRentaPorMesDTO> clientesConRentaPorMesDTOS = iObligacion.dashboardCorporativoClientesConRentaPorMes(userId);
+        List<RentasPorAnioDTO> rentasPorAnios = iObligacion.dashboardCorporativoRentasPorAnio(userId);
 
         return ResponseEntity.status(201).body(Map.of(
                 "message", "Se ha consultado obligaciones correctamente",
                 "alertas", obligaciones,
                 "estadisticas", cardgenerales,
-                "corporativoPorEntidad", corporativoPorEntidades
+                "corporativoPorEntidad", corporativoPorEntidades,
+                "clientesConRentaPorMes", clientesConRentaPorMesDTOS,
+                "rentasPorAnios", rentasPorAnios
         ));
     }
 }

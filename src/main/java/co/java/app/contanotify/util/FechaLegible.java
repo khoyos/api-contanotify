@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
 public class FechaLegible {
@@ -68,6 +69,31 @@ public class FechaLegible {
             }
         }
         return 0;
+    }
+
+    public static int obtenerAnio(String fecha) {
+        if (fecha == null || fecha.trim().isEmpty()) {
+            throw new IllegalArgumentException("Fecha vacía o nula");
+        }
+
+        // Intentamos parsear con formato ISO (yyyy-MM-dd)
+        try {
+            return LocalDate.parse(fecha).getYear();
+        } catch (DateTimeParseException e) {
+            // Intentamos con formato latino (dd/MM/yyyy)
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                return LocalDate.parse(fecha, formatter).getYear();
+            } catch (DateTimeParseException e2) {
+                // Intentamos con formato alterno (MM/dd/yyyy)
+                try {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                    return LocalDate.parse(fecha, formatter).getYear();
+                } catch (DateTimeParseException e3) {
+                    throw new IllegalArgumentException("Formato de fecha no reconocido: " + fecha);
+                }
+            }
+        }
     }
 
 }

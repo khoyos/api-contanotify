@@ -51,14 +51,15 @@ public class ObligacionClienteController {
     @GetMapping("/obligaciones")
     public ResponseEntity<?> getObligaciones(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String identidadCliente,
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String entidad,
             @RequestParam(required = false) String renta,
             @RequestParam(required = false) String pago,
             @RequestParam(required = false) String fecha,
-            @RequestParam(required = false) String estado) {
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String idContador) {
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by("nombre").ascending());
             Map<String, Object> filters = new HashMap<>();
@@ -70,7 +71,7 @@ public class ObligacionClienteController {
             filters.put("fecha", fecha);
             filters.put("estado", estado);
 
-            Page<ObligacionTableDTO> usuariosPage = iObligacionCliente.getAll(filters, pageable);
+            Page<ObligacionTableDTO> usuariosPage = iObligacionCliente.getAll(filters, pageable, idContador);
 
             return ResponseEntity.ok(Map.of(
                     "content", usuariosPage.getContent(),

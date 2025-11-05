@@ -1,17 +1,8 @@
 package co.java.app.contanotify.service.impl;
 
-import co.java.app.contanotify.dto.AlertasCriticasDTO;
-import co.java.app.contanotify.dto.CardGeneralDTO;
-import co.java.app.contanotify.dto.CorporativoPorEntidadGobiernoDTO;
-import co.java.app.contanotify.dto.ObligacionDTO;
-import co.java.app.contanotify.model.ConfiguracionObligaciones;
-import co.java.app.contanotify.model.Obligacion;
-import co.java.app.contanotify.model.ObligacionCliente;
-import co.java.app.contanotify.model.Usuario;
-import co.java.app.contanotify.repository.ConfiguracionObligacionesRepository;
-import co.java.app.contanotify.repository.ObligacionClienteRepository;
-import co.java.app.contanotify.repository.ObligacionRepository;
-import co.java.app.contanotify.repository.UsuarioRepository;
+import co.java.app.contanotify.dto.*;
+import co.java.app.contanotify.model.*;
+import co.java.app.contanotify.repository.*;
 import co.java.app.contanotify.service.IObligacion;
 import co.java.app.contanotify.util.FechaLegible;
 import org.springframework.stereotype.Service;
@@ -20,6 +11,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -30,15 +22,18 @@ public class ObligacionImpl implements IObligacion {
     private final ConfiguracionObligacionesRepository configuracionObligacionesRepository;
     private final ObligacionClienteRepository obligacionClienteRepository;
     private final UsuarioRepository usuarioRepository;
+    private final EntidadRepository entidadRepository;
 
     public ObligacionImpl(ObligacionRepository obligacionRepository,
                           ConfiguracionObligacionesRepository configuracionObligacionesRepository,
                           ObligacionClienteRepository obligacionClienteRepository,
-                          UsuarioRepository usuarioRepository) {
+                          UsuarioRepository usuarioRepository,
+                          EntidadRepository entidadRepository) {
         this.obligacionRepository = obligacionRepository;
         this.configuracionObligacionesRepository = configuracionObligacionesRepository;
         this.obligacionClienteRepository = obligacionClienteRepository;
         this.usuarioRepository = usuarioRepository;
+        this.entidadRepository = entidadRepository;
     }
 
     @Override
@@ -198,13 +193,14 @@ public class ObligacionImpl implements IObligacion {
         Optional<List<ConfiguracionObligaciones>> obligacionesPorHacerList =
                 configuracionObligacionesRepository.findByUsuarioId(usuarioId);
 
-        // Si no hay obligaciones, devolvemos los 12 meses con valor 0
+        // Si no hay obligaciones, devolvemos los 12 meses con valor 0 y sin entidad
         if (obligacionesPorHacerList.isEmpty() || obligacionesPorHacerList.get().isEmpty()) {
             return IntStream.rangeClosed(1, 12)
                     .mapToObj(mes -> {
                         CorporativoPorEntidadGobiernoDTO dto = new CorporativoPorEntidadGobiernoDTO();
-                        dto.setName(FechaLegible.nombreMes(mes));
+                        dto.setName(FechaLegible.nombreMesAbreviado(mes));
                         dto.setValue(0);
+                        dto.setType(null); //No hay entidad asociada
                         return dto;
                     })
                     .collect(Collectors.toList());
@@ -212,27 +208,113 @@ public class ObligacionImpl implements IObligacion {
 
         List<ConfiguracionObligaciones> obligaciones = obligacionesPorHacerList.get();
 
-        // Agrupar por mes (extraído de la fecha)
-        Map<Integer, Long> conteoPorMes = obligaciones.stream()
+        // Agrupamos por mes y entidad (porque varias entidades pueden tener registros en distintos meses)
+        Map<Integer, Map<String, Long>> conteoPorMesYEntidad = obligaciones.stream()
                 .filter(o -> o.getFecha() != null && !o.getFecha().isEmpty())
                 .collect(Collectors.groupingBy(
-                        o -> FechaLegible.obtenerMes(o.getFecha()), // debe retornar 1-12
-                        Collectors.counting()
+                        o -> FechaLegible.obtenerMes(o.getFecha()), // clave: mes (1–12)
+                        Collectors.groupingBy(
+                                o -> Optional.ofNullable(o.getEntidad()).orElse("Desconocida"), // clave: entidad
+                                Collectors.counting()
+                        )
                 ));
 
-        // Crear lista con los 12 meses, asignando 0 si no existe, y ordenada enero→diciembre
-        return IntStream.rangeClosed(1, 12)
-                .mapToObj(mes -> {
+        // Generamos la lista de DTOs (puede haber varios por mes si hay varias entidades)
+        List<CorporativoPorEntidadGobiernoDTO> resultado = new ArrayList<>();
+
+        IntStream.rangeClosed(1, 12).forEach(mes -> {
+            Map<String, Long> entidades = conteoPorMesYEntidad.getOrDefault(mes, Collections.emptyMap());
+
+            if (entidades.isEmpty()) {
+                // Si no hay entidades ese mes, agregamos el mes con valor 0
+                CorporativoPorEntidadGobiernoDTO dto = new CorporativoPorEntidadGobiernoDTO();
+                dto.setName(FechaLegible.nombreMesAbreviado(mes));
+                dto.setValue(0);
+                dto.setType(null);
+                resultado.add(dto);
+            } else {
+                // Si hay entidades, creamos un DTO por cada una
+                entidades.forEach((entidad, conteo) -> {
                     CorporativoPorEntidadGobiernoDTO dto = new CorporativoPorEntidadGobiernoDTO();
-                    dto.setName(FechaLegible.nombreMesAbreviado(mes)); // Ej: Enero, Febrero, etc.
-                    dto.setValue(conteoPorMes.getOrDefault(mes, 0L).intValue());
-                    return dto;
-                })
-                // El .sorted no es estrictamente necesario porque ya generamos en orden 1..12,
-                // pero lo dejo comentado por si prefieres asegurar el orden por nombre:
-                // .sorted(Comparator.comparingInt(e -> FechaLegible.obtenerNumeroMesPorNombre(e.getName())))
+                    dto.setName(FechaLegible.nombreMesAbreviado(mes));
+                    dto.setValue(conteo.intValue());
+                    dto.setType(entidad); //Aquí asignamos el valor del atributo "entidad"
+                    resultado.add(dto);
+                });
+            }
+        });
+
+        return resultado;
+    }
+
+    @Override
+    public List<ClientesConRentaPorMesDTO> dashboardCorporativoClientesConRentaPorMes(String usuarioId) {
+
+        Optional<List<ConfiguracionObligaciones>> obligacionesOpt =
+                configuracionObligacionesRepository.findByUsuarioId(usuarioId);
+
+        if (obligacionesOpt.isEmpty() || obligacionesOpt.get().isEmpty()) {
+            return IntStream.rangeClosed(1, 12)
+                    .mapToObj(mes -> new ClientesConRentaPorMesDTO(
+                            FechaLegible.nombreMesAbreviado(mes),
+                            0
+                    ))
+                    .collect(Collectors.toList());
+        }
+
+        List<ConfiguracionObligaciones> obligaciones = obligacionesOpt.get();
+
+        List<ConfiguracionObligaciones> filtradas = obligaciones.stream()
+                .filter(o -> o.getRenta() != null && !o.getRenta().isEmpty())
+                .filter(o -> o.getPago() != null && !o.getPago().isEmpty())
+                .filter(o -> o.getFecha() != null && !o.getFecha().isEmpty())
+                .collect(Collectors.toList());
+
+        Map<Integer, Long> conteoPorMes = filtradas.stream()
+                .collect(Collectors.groupingBy(
+                        o -> FechaLegible.obtenerMes(o.getFecha()), // mes 1–12
+                        Collectors.mapping(ConfiguracionObligaciones::getClienteId, Collectors.toSet())
+                ))
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> (long) e.getValue().size()
+                ));
+
+        return IntStream.rangeClosed(1, 12)
+                .mapToObj(mes -> new ClientesConRentaPorMesDTO(
+                        FechaLegible.nombreMesAbreviado(mes),
+                        conteoPorMes.getOrDefault(mes, 0L).intValue()
+                ))
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<RentasPorAnioDTO> dashboardCorporativoRentasPorAnio(String usuarioId) {
+
+        // 1️⃣ Consultar las obligaciones por estado "Declarado y Presentado"
+        Optional<List<ConfiguracionObligaciones>> obligacionesOpt =
+                configuracionObligacionesRepository.findByUsuarioIdAndEstado(usuarioId, "Declarado y Presentado");
+
+        // 2️⃣ Validar si hay resultados
+        if (obligacionesOpt.isEmpty() || obligacionesOpt.get().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ConfiguracionObligaciones> obligaciones = obligacionesOpt.get();
+
+        // 3️⃣ Agrupar por año obtenido de la fecha
+        Map<Integer, Long> conteoPorAnio = obligaciones.stream()
+                .map(o -> FechaLegible.obtenerAnio(o.getFecha())) // obtiene el año de forma segura
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        // 4️⃣ Convertir a DTO ordenado ascendentemente por año
+        return conteoPorAnio.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> new RentasPorAnioDTO(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+    }
 
 }

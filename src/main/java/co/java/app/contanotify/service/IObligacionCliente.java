@@ -11,7 +11,7 @@ public interface IObligacionCliente {
 
     List<Map<String, Object>> save(ObligacionClienteDTO obligacionClienteDTO);
 
-    Page<ObligacionTableDTO> getAll(Map<String,Object> filters, Pageable pageable);
+    Page<ObligacionTableDTO> getAll(Map<String,Object> filters, Pageable pageable, String idContador);
 
     void saveConfiguracionObligacion(ConfiguracionObligacionesDTO configuracionObligacionesDTO);
 
