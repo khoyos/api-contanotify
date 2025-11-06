@@ -1,6 +1,7 @@
 package co.java.app.contanotify.controller;
 
 import co.java.app.contanotify.dto.*;
+import co.java.app.contanotify.model.TipoUsuario;
 import co.java.app.contanotify.model.Usuario;
 import co.java.app.contanotify.repository.UsuarioRepository;
 import co.java.app.contanotify.service.ITipoUsuario;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -39,7 +41,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
-        var userOpt = repo.findByEmail(req.getEmail());
+        Optional<TipoUsuarioDTO> optOptional = iTipoUsuario.findByName("contador");
+        Optional<TipoUsuarioDTO> optTipoUsuario = iTipoUsuario.findByPublicId(optOptional.get().getPublicId());
+        var userOpt = repo.findByEmailAndTipoUsuarioIdAndActive(req.getEmail(), new ObjectId(optTipoUsuario.get().getId()), true);
         if (userOpt.isEmpty()) return ResponseEntity.status(401).body(Map.of("error","Usuario o contraseña inválidos."));
 
         Usuario user = userOpt.get();
@@ -63,8 +67,10 @@ public class AuthController {
 
     @PostMapping("/request-reset")
     public ResponseEntity<?> requestReset(@RequestBody Map<String,String> body){
+        Optional<TipoUsuarioDTO> optOptional = iTipoUsuario.findByName("contador");
+        Optional<TipoUsuarioDTO> optTipoUsuario = iTipoUsuario.findByPublicId(optOptional.get().getPublicId());
         String email = body.get("email");
-        var u = repo.findByEmail(email).orElse(null);
+        var u = repo.findByEmailAndTipoUsuarioIdAndActive(email, new ObjectId(optTipoUsuario.get().getId()), true).orElse(null);
         if (u == null) {
             // NO filtrar si el email existe — por seguridad responde igual (pero aquí devolvemos OK)
             return ResponseEntity.ok(Map.of("message","Si existe una cuenta se envió el email"));
@@ -97,7 +103,9 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest req) {
-        if (repo.findByEmail(req.getEmail()).isPresent()) {
+        Optional<TipoUsuarioDTO> optOptional = iTipoUsuario.findByName("contador");
+        Optional<TipoUsuarioDTO> optTipoUsuario = iTipoUsuario.findByPublicId(optOptional.get().getPublicId());
+        if (repo.findByEmailAndTipoUsuarioIdAndActive(req.getEmail(), new ObjectId(optTipoUsuario.get().getId()), true).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "El email ya está registrado"));
         }
 

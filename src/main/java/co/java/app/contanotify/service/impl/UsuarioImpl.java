@@ -44,8 +44,11 @@ public class UsuarioImpl implements IUsuario {
             throw new RuntimeException("Ya existe un cliente con este documento");
         }
 
-        if (usuarioRepository.findByEmailAndUsuarioContadorId(usuarioDTO.getEmail(), usuarioDTO.getUsuarioContadorId()).isPresent()) {
-            throw new RuntimeException("Error al acrear usuario");
+        Optional<TipoUsuario> opt = tipoUsuarioRepository.findByName("cliente");
+        Optional<TipoUsuario> optTipoUsuario = tipoUsuarioRepository.findByPublicId(opt.get().getPublicId());
+
+        if (usuarioRepository.findByEmailAndTipoUsuarioIdAndActiveAndUsuarioContadorId(usuarioDTO.getEmail(), new ObjectId(optTipoUsuario.get().getId()), true, usuarioDTO.getUsuarioContadorId()).isPresent()) {
+            throw new RuntimeException("Ya existe un usuario con este email");
         }
 
         Usuario usuario = new Usuario();

@@ -16,4 +16,7 @@ public interface ObligacionClienteRepository extends MongoRepository<ObligacionC
     Optional<List<ObligacionCliente>> findByFecha(LocalDateTime date);
 
     Optional<List<ObligacionCliente>> findByConfiguracionClienteIdAndCalendarioIdAndFecha(ObjectId configClienteId, ObjectId calendarioId, LocalDateTime fecha);
+
+    List<ObligacionCliente> findByFechaBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+
 }

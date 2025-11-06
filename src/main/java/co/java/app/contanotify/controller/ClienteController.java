@@ -32,7 +32,7 @@ public class ClienteController {
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "error", "El email ya está registrado"
+                    "error", "El cliente no pudo guardarse con exito"
             ));
         }
     }

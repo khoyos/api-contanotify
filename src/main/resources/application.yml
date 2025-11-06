@@ -31,3 +31,11 @@ jwt:
   expiration-ms: 18000000
   #expiration-ms: 3600000   # 1 hora (puedes ajustar)
 
+dias:
+  alerta:
+    urgente: 3
+    alta: 7
+    media: 13
+    hoy: 0
+
+

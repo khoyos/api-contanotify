@@ -1,6 +1,7 @@
 package co.java.app.contanotify.repository;
 
 import co.java.app.contanotify.model.Usuario;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
@@ -10,7 +11,9 @@ public interface UsuarioRepository extends MongoRepository<Usuario, String> {
 
     Optional<Usuario> findByPublicId(String publicId);
 
-    Optional<Usuario> findByEmail(String email);
+    Optional<Usuario> findByEmailAndTipoUsuarioIdAndActive(String email, ObjectId tipoUsuario, boolean active);
+
+    Optional<Usuario> findByEmailAndTipoUsuarioIdAndActiveAndUsuarioContadorId(String email, ObjectId tipoUsuario, boolean active, String usuarioContadorId);
 
     Optional<Usuario> findByDocumento(String documento);
 

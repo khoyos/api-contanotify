@@ -1,5 +1,6 @@
 package co.java.app.contanotify.service.impl;
 
+import co.java.app.contanotify.config.DiasAlertaProperties;
 import co.java.app.contanotify.dto.ObligacionDTO;
 import co.java.app.contanotify.model.*;
 import co.java.app.contanotify.repository.*;
@@ -20,19 +21,22 @@ public class ReminderScheduler {
     private final UsuarioRepository usuarioRepository;
     private final ReminderProducer reminderProducer;
     private final ObligacionRepository obligacionRepository;
+    private final DiasAlertaProperties diasAlerta;
 
     public ReminderScheduler(ObligacionClienteRepository obligacionClienteRepository,
                              ReminderProducer reminderProducer,
                              CalendarioRepository calendarioRepository,
                              ConfiguracionClienteRepository configuracionClienteRepository,
                              UsuarioRepository usuarioRepository,
-                             ObligacionRepository obligacionRepository) {
+                             ObligacionRepository obligacionRepository,
+                             DiasAlertaProperties diasAlerta) {
         this.obligacionClienteRepository = obligacionClienteRepository;
         this.reminderProducer = reminderProducer;
         this.calendarioRepository = calendarioRepository;
         this.configuracionClienteRepository= configuracionClienteRepository;
         this.usuarioRepository = usuarioRepository;
         this.obligacionRepository = obligacionRepository;
+        this.diasAlerta = diasAlerta;
     }
 
     // Se ejecuta todos los días a las 8am
@@ -42,59 +46,62 @@ public class ReminderScheduler {
         LocalDate today = LocalDate.now();
         //System.out.println("* scheduleReminders leyendo cola");
 
-        // Buscar tareas para 5 días adelante
-        processRemindersPlusDays(today.plusDays(5),5);
+        // Buscar tareas para hoy
+        LocalDate localHoy = today.minusDays(1);
+        processRemindersPlusDays(localHoy, localHoy.plusDays(diasAlerta.getUrgente() + 1), diasAlerta.getHoy());
 
-        // Buscar tareas para 3 días adelante
-        processRemindersPlusDays(today.plusDays(3), 3);
+        // Buscar tareas para ALTAS días adelante
+        LocalDate localAlta = today.plusDays(diasAlerta.getUrgente());
+        processRemindersPlusDays(localAlta, localAlta.plusDays(diasAlerta.getAlta() + 1), diasAlerta.getAlta());
+
+        // Buscar tareas para MEDIA días adelante
+        LocalDate localMedia = today.plusDays(diasAlerta.getAlta());
+        processRemindersPlusDays(localMedia, localMedia.plusDays(diasAlerta.getMedia() + 1),diasAlerta.getMedia());
+
 
         // Buscar tareas para 1 día adelante
-        processRemindersPlusDays(today.plusDays(1), 1);
+        //processRemindersPlusDays(today.plusDays(diasAlerta.getAlta()), today.plusDays(diasAlerta.getUrgente()), diasAlerta.getUrgente());
 
-        // Buscar tareas para hoy
-        processRemindersPlusDays(today,0);
 
     }
 
-    private void processRemindersPlusDays(LocalDate today, int daysToAdd) {
-        Optional<List<ObligacionCliente>> tasksOpt = obligacionClienteRepository.findByFecha(today.atStartOfDay());
+    private void processRemindersPlusDays(LocalDate today,LocalDate todayPlusDays, int daysToAdd) {
+        List<ObligacionCliente> tasksOpt = obligacionClienteRepository.findByFechaBetween(today.atStartOfDay(), todayPlusDays.atStartOfDay());
 
         if(tasksOpt.isEmpty()){
             return;
         }
 
-        List<ObligacionCliente> tasks = tasksOpt.get();
-
-        for(ObligacionCliente obligacionDelCliente: tasks){
+        for(ObligacionCliente obligacionDelCliente: tasksOpt){
            // long daysToDue = ChronoUnit.DAYS.between(today, obligacionDelCliente.getFecha());
 
-            if (daysToAdd == 5 && !obligacionDelCliente.isReminder5DaysSent()) {
+            if (daysToAdd == diasAlerta.getMedia() && !obligacionDelCliente.isReminder5DaysSent()) {
                 // Buscar tareas para 5 días adelante
-                sendReminders(obligacionDelCliente, 5);
+                sendReminders(obligacionDelCliente, diasAlerta.getMedia());
                 obligacionDelCliente.setReminder5DaysSent(true);
 
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar 5 días antes envio email y se guardo obligacion cliente");
-            } else if (daysToAdd == 3 && !obligacionDelCliente.isReminder3DaysSent()) {
+            } else if (daysToAdd == diasAlerta.getAlta() && !obligacionDelCliente.isReminder3DaysSent()) {
                 // Buscar tareas para 3 días adelante
-                sendReminders(obligacionDelCliente, 3);
+                sendReminders(obligacionDelCliente, diasAlerta.getAlta());
                 obligacionDelCliente.setReminder3DaysSent(true);
 
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar 3 días antes envio email y se guardo obligacion cliente");
-            } else if (daysToAdd == 1 && !obligacionDelCliente.isReminder1DaySent()) {
+            } else if (daysToAdd == diasAlerta.getUrgente() && !obligacionDelCliente.isReminder1DaySent()) {
                 // Buscar tareas para 1 día adelante
-                sendReminders(obligacionDelCliente, 1);
+                sendReminders(obligacionDelCliente, diasAlerta.getUrgente());
                 obligacionDelCliente.setReminder1DaySent(true);
 
                 obligacionClienteRepository.save(obligacionDelCliente);
 
                 System.out.println("* Se ejecuto recordar 1 días antes envio email y se guardo obligacion cliente");
-            }else if (daysToAdd == 0 && !obligacionDelCliente.isReminderToDaySent()) {
+            }else if (daysToAdd == diasAlerta.getHoy() && !obligacionDelCliente.isReminderToDaySent()) {
                 // Buscar tareas para 1 día adelante
-                sendReminders(obligacionDelCliente, 0);
+                sendReminders(obligacionDelCliente, diasAlerta.getHoy());
                 obligacionDelCliente.setReminderToDaySent(true);
 
                 obligacionClienteRepository.save(obligacionDelCliente);

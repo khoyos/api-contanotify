@@ -1,5 +1,6 @@
 package co.java.app.contanotify.service.impl;
 
+import co.java.app.contanotify.config.DiasAlertaProperties;
 import co.java.app.contanotify.dto.*;
 import co.java.app.contanotify.model.*;
 import co.java.app.contanotify.repository.*;
@@ -23,17 +24,20 @@ public class ObligacionImpl implements IObligacion {
     private final ObligacionClienteRepository obligacionClienteRepository;
     private final UsuarioRepository usuarioRepository;
     private final EntidadRepository entidadRepository;
+    private final DiasAlertaProperties diasAlertaProperties;
 
     public ObligacionImpl(ObligacionRepository obligacionRepository,
                           ConfiguracionObligacionesRepository configuracionObligacionesRepository,
                           ObligacionClienteRepository obligacionClienteRepository,
                           UsuarioRepository usuarioRepository,
-                          EntidadRepository entidadRepository) {
+                          EntidadRepository entidadRepository,
+                          DiasAlertaProperties diasAlertaProperties) {
         this.obligacionRepository = obligacionRepository;
         this.configuracionObligacionesRepository = configuracionObligacionesRepository;
         this.obligacionClienteRepository = obligacionClienteRepository;
         this.usuarioRepository = usuarioRepository;
         this.entidadRepository = entidadRepository;
+        this.diasAlertaProperties = diasAlertaProperties;
     }
 
     @Override
@@ -112,24 +116,28 @@ public class ObligacionImpl implements IObligacion {
             if(response.get().isReminderToDaySent()){
                 alertasCriticasDTO.setUrgente(response.get().isReminderToDaySent());
                 alertasCriticasDTO.setMensaje("Vence Hoy ");
+                alertasCriticasDTO.setDays("Hoy");
                 alertasCriticasList.add(alertasCriticasDTO);
                 continue;
             }
             if(response.get().isReminder1DaySent()){
                 alertasCriticasDTO.setUrgente(response.get().isReminder1DaySent());
                 alertasCriticasDTO.setMensaje("Vence Mañana ");
+                alertasCriticasDTO.setDays(String.valueOf(diasAlertaProperties.getUrgente()));
                 alertasCriticasList.add(alertasCriticasDTO);
                 continue;
             }
             if(response.get().isReminder3DaysSent()){
                 alertasCriticasDTO.setAlta(response.get().isReminder3DaysSent());
-                alertasCriticasDTO.setMensaje("Vence Dentro de 3 Días");
+                alertasCriticasDTO.setMensaje("Vence Dentro de Días");
+                alertasCriticasDTO.setDays(String.valueOf(diasAlertaProperties.getAlta()));
                 alertasCriticasList.add(alertasCriticasDTO);
                 continue;
             }
             if(response.get().isReminder5DaysSent()){
                 alertasCriticasDTO.setMedia(response.get().isReminder5DaysSent());
                 alertasCriticasDTO.setMensaje("Vence Dentro de 5 Días");
+                alertasCriticasDTO.setDays(String.valueOf(diasAlertaProperties.getMedia()));
                 alertasCriticasList.add(alertasCriticasDTO);
                 continue;
             }

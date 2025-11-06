@@ -11,6 +11,7 @@ public class AlertasCriticasDTO {
     private boolean media;
     private boolean vencida;
     private String mensaje;
+    private String days;
 
     public void setFechaVencimiento(String fechaVencimiento) {
         this.fechaVencimiento = fechaVencimiento;
@@ -83,4 +84,8 @@ public class AlertasCriticasDTO {
     public boolean isVencida() { return vencida; }
 
     public void setVencida(boolean vencida) { this.vencida = vencida; }
+
+    public String getDays() { return days; }
+
+    public void setDays(String days) { this.days = days; }
 }
