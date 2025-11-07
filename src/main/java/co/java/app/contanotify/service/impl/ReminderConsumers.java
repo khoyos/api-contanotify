@@ -61,9 +61,9 @@ public class ReminderConsumers {
             variables.put("renta", payload.get("renta"));
             variables.put("pago", payload.get("pago"));
             variables.put("colorClass", payload.get("colorClass"));
-            variables.put("dias", payload.get("dias").equals("0")?"Es Hoy": payload.get("dias"));
+            //variables.put("dias", payload.get("dias").equals("0")?"Es Hoy": payload.get("dias"));
 
-            variables.toString();
+            //variables.toString();
             emailSender.sendHtmlEmail(payload.get("to"),"Contanotify te recuerda estar pendiente de tus obligaciones tributarias",payload.get("template"),variables);
         } catch (Exception e) {
             throw new RuntimeException(e);

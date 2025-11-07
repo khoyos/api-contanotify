@@ -122,12 +122,14 @@ public class ReminderScheduler {
        boolean isNotificarCliente = configuracionCliente.get().isNotificarCliente();
        boolean isNotificarContador = configuracionCliente.get().isNotificarContador();
 
-       String colorClass = switch (days) {
-            case 0, 1 -> "obligation-red";
-            case 3 -> "obligation-orange";
-            case 5 -> "obligation-yellow";
-            default -> "";
-       };
+        String colorClass = "";
+       if(diasAlerta.getUrgente() == days){
+           colorClass = "obligation-red";
+       } else if (diasAlerta.getAlta() == days) {
+           colorClass = "obligation-orange";
+       } else if (diasAlerta.getMedia() == days) {
+           colorClass = "obligation-yellow";
+       }
 
        if(isNotificarCliente){
            Map<String, String> request = new HashMap<>();
