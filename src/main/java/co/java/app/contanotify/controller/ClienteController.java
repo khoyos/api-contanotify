@@ -32,7 +32,7 @@ public class ClienteController {
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "error", "El email ya está registrado"
+                    "error", "El cliente no pudo guardarse con exito"
             ));
         }
     }
@@ -44,10 +44,11 @@ public class ClienteController {
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String documento,
-            @RequestParam(required = false) String email) {
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String idContador) {
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by("nombre").ascending());
-            Page<UsuarioDTO> usuariosPage = iUsuario.getAll(nombre, documento, email, pageable);
+            Page<UsuarioDTO> usuariosPage = iUsuario.getAll(nombre, documento, email, pageable, idContador);
 
             return ResponseEntity.ok(Map.of(
                     "content", usuariosPage.getContent(),
@@ -116,14 +117,15 @@ public class ClienteController {
 
             UsuarioDTO usuarioDTO = iUsuario.findById(idCliente);
 
+            usuarioDTO.setId(idCliente);
             usuarioDTO.setNombre(client.getNombre());
             usuarioDTO.setDocumento(client.getDocumento());
             usuarioDTO.setTelefono(client.getTelefono());
             usuarioDTO.setEmail(client.getEmail());
             usuarioDTO.setTipoDocumento(client.getTipoDocumento());
+            usuarioDTO.setRazonSocial(client.getRazonSocial());
 
             iUsuario.update(usuarioDTO);
-
 
             return ResponseEntity.status(201).body(Map.of(
                     "message", "se consulto el cliente exitosamente",
@@ -142,13 +144,13 @@ public class ClienteController {
             @PathVariable String idCliente) {
         try {
 
-            UsuarioDTO usuarioDTO = iUsuario.findById(idCliente);
+            UsuarioDTO usuarioDTO = new UsuarioDTO();
+            usuarioDTO.setId(idCliente);
 
             iUsuario.delete(usuarioDTO);
 
             return ResponseEntity.status(201).body(Map.of(
-                    "message", "se consulto el cliente exitosamente",
-                    "cliente", usuarioDTO));
+                    "message", "La operacions se hizo con exito"));
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of(

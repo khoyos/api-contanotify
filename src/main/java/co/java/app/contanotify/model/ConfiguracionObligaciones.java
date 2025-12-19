@@ -3,18 +3,26 @@ package co.java.app.contanotify.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.UUID;
+
 @Document(collection = "configuracion_obligaciones")
 public class ConfiguracionObligaciones {
 
     @Id
     private String id;
+    private String publicId;
     private String usuarioId;
     private String clienteId;
+    private String identidadCliente;
     private String nombreCliente;
     private String entidad;
     private String renta;
     private String pago;
     private String fecha;
+    private String obligacionClienteId;
+    private String estado;
+    private String observacion;
+    private String periodo;
 
     public String getId() {
         return id;
@@ -79,4 +87,34 @@ public class ConfiguracionObligaciones {
     public void setFecha(String fecha) {
         this.fecha = fecha;
     }
+
+    public String getObligacionClienteId() {
+        return obligacionClienteId;
+    }
+
+    public void setObligacionClienteId(String obligacionClienteId) {
+        this.obligacionClienteId = obligacionClienteId;
+    }
+
+    public String getIdentidadCliente() {
+        return identidadCliente;
+    }
+
+    public void setIdentidadCliente(String identidadCliente) {this.identidadCliente = identidadCliente;}
+
+    public String getPublicId() { return publicId;}
+
+    public void setPublicId(String publicId) { this.publicId = publicId;}
+
+    public String getEstado() { return estado; }
+
+    public void setEstado(String estado) { this.estado = estado; }
+
+    public String getObservacion() { return observacion; }
+
+    public void setObservacion(String observacion) { this.observacion = observacion; }
+
+    public String getPeriodo() { return periodo; }
+
+    public void setPeriodo(String periodo) { this.periodo = periodo; }
 }

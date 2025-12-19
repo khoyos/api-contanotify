@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Información de Obligación Tributaria - ContaNotify</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f6f8;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #2c3e50;
+    }
+
+    .email-container {
+      max-width: 650px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #004e92 0%, #000428 100%);
+      padding: 35px 25px;
+      text-align: center;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 26px;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .header p {
+      margin-top: 10px;
+      font-size: 15px;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 35px 30px;
+      line-height: 1.7;
+    }
+
+    .greeting {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .status-box {
+      border-left: 4px solid;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 25px 0;
+      background-color: #f9fafb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .status-box.elaborando {
+      border-color: #ffc107;
+      background-color: #fff8e1;
+    }
+
+    .status-box.pendiente {
+      border-color: #dc3545;
+      background-color: #fdecea;
+    }
+
+    .status-box.declarado {
+      border-color: #28a745;
+      background-color: #e8f5e9;
+    }
+
+    .status-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-message {
+      font-size: 15px;
+      color: #333;
+      margin: 0;
+    }
+
+    .obligation-date {
+      font-weight: 800;
+      color: #dc3545;
+      margin-top: 10px;
+    }
+
+    .success-date {
+      font-weight: 800;
+      color: #2fd678;
+      margin-top: 10px;
+    }
+
+    .pending-date {
+      font-weight: 800;
+      color: #f2d03a;
+      margin-top: 10px;
+    }
+
+    .observation {
+      margin-top: 20px;
+      padding: 15px;
+      border-left: 4px solid #0d6efd;
+      background-color: #eef3fb;
+      border-radius: 6px;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .observation strong {
+      color: #004085;
+    }
+
+    .cta-section {
+      text-align: center;
+      margin: 35px 0 15px 0;
+    }
+
+    .cta-button {
+      background-color: #004e92;
+      color: white;
+      text-decoration: none;
+      padding: 14px 30px;
+      border-radius: 25px;
+      font-weight: 600;
+      transition: background 0.3s ease, transform 0.2s ease;
+      display: inline-block;
+    }
+
+    .cta-button:hover {
+      background-color: #1565c0;
+      transform: translateY(-2px);
+    }
+
+    .footer {
+      background: #000428;
+      color: #fff;
+      text-align: center;
+      padding: 25px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .footer strong {
+      font-size: 16px;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    @media (max-width: 600px) {
+      .email-container {
+        margin: 20px;
+      }
+      .content {
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div class="email-container">
+  <div class="header">
+    <h1>Información de Obligaciones Tributaria</h1>
+    <p>Notificación para el Cliente - ContaNotify</p>
+  </div>
+
+  <div class="content">
+    <p class="greeting">Estimado(a) Cliente: <strong th:text="${name}">Usuario</strong> 👋</p>
+
+    <p>
+      Le informamos que el estado de su obligación tributaria ha sido
+      actualizado. El detalle del estado de su obligación es.
+    </p>
+
+    <!-- Estado general dinámico -->
+    <div class="status-box elaborando" th:if="${estado == 'Elaboración'}">
+      <div class="status-title">🟡 En elaboración</div>
+      <p class="status-message">
+        Su contador se encuentra <strong>elaborando la declaración</strong> correspondiente
+        al periodo actual. Pronto recibirá la confirmación final.
+      </p>
+
+      <div class="status-message" >Para la obligacion tributaria del:
+        <div class="status-message" >Declaración: </div>
+        <div class="status-message"><strong><span th:text="${renta}">Nombre de la renta:</span><strong></div>
+        <div class="status-message"><strong><span th:text="${pago}">Nombre del pago:</span><strong></div>
+
+      </div>
+      <div class="pending-date" th:text="${fecha}">15 de Febrero, 2025</div>
+    </div>
+
+
+    <div class="status-box pendiente" th:if="${estado == 'Pendiente por Documentos.'}">
+      <div class="status-title">🔴 Pendiente por documentación</div>
+      <p class="status-message">
+        Su contador está <strong>esperando documentación adicional</strong> para continuar con la declaración.
+        Por favor, revise su bandeja de <strong>observación</strong> o comuníquese con su contador.
+      </p>
+
+      <div class="status-message" >Para la obligacion tributaria del: </div>
+
+      <br/>
+      <div class="status-message" >Declaración: </div>
+      <div class="status-message"><strong><span th:text="${renta}">Nombre de la renta:</span></strong></div>
+      <div class="status-message"><strong><span th:text="${pago}">Nombre del Pago:</span></strong></div>
+      <div class="obligation-date" th:text="${fecha}">15 de Febrero, 2025</div>
+    </div>
+
+    <div class="status-box declarado" th:if="${estado == 'Declarado y Presentado'}">
+      <div class="status-title">🟢 Declarado y presentado</div>
+      <p class="status-message">
+        Su contador ha <strong>presentado la declaración exitosamente</strong>. Los documentos
+        correspondientes fueron entregados a la DIAN.
+      </p>
+
+      <div class="status-message" >Para la obligacion tributaria del: </div>
+
+      <br/>
+      <div class="status-message" >Declaración: </div>
+      <div class="status-message"><strong><span th:text="${renta}">Nombre de la renta:</span></strong></div>
+      <div class="status-message"><strong><span th:text="${pago}">Nombre del pago:</span></strong></div>
+      <div class="success-date" th:text="${fecha}">15 de Febrero, 2025</div>
+    </div>
+
+    <!-- Sección de observación -->
+    <div class="observation" th:if="${estadoObservacion == 'no'}">
+      <strong>📋 Observación:</strong>
+      <strong><p th:text="${observacion}"></p><strong>
+    </div>
+
+    <p style="color: #555; font-size: 14px;">
+      <strong>Nota:</strong> Este mensaje es informativo. Si tiene dudas sobre
+      el estado o la documentación requerida, comuníquese directamente con su contador.
+    </p>
+  </div>
+
+  <div class="footer">
+    <strong>ContaNotify</strong>
+    Notificaciones Tributarias Automatizadas<br />
+    📧 soporte@contanotify.com | ☎️ +57 (1) 345-6789<br />
+    Cartagena de Indias, Colombia
+  </div>
+</div>
+</body>
+</html>

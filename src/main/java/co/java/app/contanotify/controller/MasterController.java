@@ -10,6 +10,7 @@ import co.java.app.contanotify.service.impl.EntidadImpl;
 import co.java.app.contanotify.service.impl.ObligacionImpl;
 import co.java.app.contanotify.service.impl.TipoUsuarioImpl;
 import jakarta.validation.Valid;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +42,7 @@ public class MasterController {
         if (iTipoUsuario.findByName(req.getName().toLowerCase()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "El tipo de usuario ya está registrado"));
         }
+
         iTipoUsuario.save(req);
 
         return ResponseEntity.status(201).body(Map.of(
@@ -54,6 +56,7 @@ public class MasterController {
         if (iObligacion.findByName(req.getName().toLowerCase()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "La obligación ya está registrada"));
         }
+
         iObligacion.save(req);
 
         return ResponseEntity.status(201).body(Map.of(
@@ -134,6 +137,24 @@ public class MasterController {
         return ResponseEntity.status(201).body(Map.of(
                 "message", "Se ha consultado obligaciones correctamente",
                 "obligaciones", obligaciones
+        ));
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<?> getDashboard(@RequestParam(required = true) String userId) {
+        List<AlertasCriticasDTO> obligaciones = iObligacion.dashboardAlertas(userId);
+        CardGeneralDTO cardgenerales = iObligacion.dashboardCardGeneral(userId);
+        List<CorporativoPorEntidadGobiernoDTO> corporativoPorEntidades = iObligacion.dashboardCorporativoPorEntidad(userId);
+        List<ClientesConRentaPorMesDTO> clientesConRentaPorMesDTOS = iObligacion.dashboardCorporativoClientesConRentaPorMes(userId);
+        List<RentasPorAnioDTO> rentasPorAnios = iObligacion.dashboardCorporativoRentasPorAnio(userId);
+
+        return ResponseEntity.status(201).body(Map.of(
+                "message", "Se ha consultado obligaciones correctamente",
+                "alertas", obligaciones,
+                "estadisticas", cardgenerales,
+                "corporativoPorEntidad", corporativoPorEntidades,
+                "clientesConRentaPorMes", clientesConRentaPorMesDTOS,
+                "rentasPorAnios", rentasPorAnios
         ));
     }
 }

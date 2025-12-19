@@ -1,6 +1,7 @@
 package co.java.app.contanotify.controller;
 
 import co.java.app.contanotify.dto.*;
+import co.java.app.contanotify.model.TipoUsuario;
 import co.java.app.contanotify.model.Usuario;
 import co.java.app.contanotify.repository.UsuarioRepository;
 import co.java.app.contanotify.service.ITipoUsuario;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -39,8 +41,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
-        var userOpt = repo.findByEmail(req.getEmail());
-        if (userOpt.isEmpty()) return ResponseEntity.status(401).body(Map.of("error","Credenciales inválidas"));
+        Optional<TipoUsuarioDTO> optOptional = iTipoUsuario.findByName("contador");
+        Optional<TipoUsuarioDTO> optTipoUsuario = iTipoUsuario.findByPublicId(optOptional.get().getPublicId());
+        var userOpt = repo.findByEmailAndTipoUsuarioIdAndActive(req.getEmail(), new ObjectId(optTipoUsuario.get().getId()), true);
+        if (userOpt.isEmpty()) return ResponseEntity.status(401).body(Map.of("error","Usuario o contraseña inválidos."));
 
         Usuario user = userOpt.get();
         // bloqueo vigente?
@@ -50,7 +54,7 @@ public class AuthController {
 
         if (!encoder.matches(req.getPassword(), user.getPassword())) {
             userService.recordFailedAttempt(user);
-            return ResponseEntity.status(401).body(Map.of("error","Credenciales inválidas"));
+            return ResponseEntity.status(401).body(Map.of("error","Usuario o contraseña inválidos."));
         }
 
         // login correcto
@@ -58,13 +62,15 @@ public class AuthController {
         String token = jwtUtil.generateToken(user.getEmail());
         return ResponseEntity.ok(Map.of("token", token,
                 "user", user.getNombre(),
-                "userId", user.getId()));
+                "userId", user.getPublicId()));
     }
 
     @PostMapping("/request-reset")
     public ResponseEntity<?> requestReset(@RequestBody Map<String,String> body){
+        Optional<TipoUsuarioDTO> optOptional = iTipoUsuario.findByName("contador");
+        Optional<TipoUsuarioDTO> optTipoUsuario = iTipoUsuario.findByPublicId(optOptional.get().getPublicId());
         String email = body.get("email");
-        var u = repo.findByEmail(email).orElse(null);
+        var u = repo.findByEmailAndTipoUsuarioIdAndActive(email, new ObjectId(optTipoUsuario.get().getId()), true).orElse(null);
         if (u == null) {
             // NO filtrar si el email existe — por seguridad responde igual (pero aquí devolvemos OK)
             return ResponseEntity.ok(Map.of("message","Si existe una cuenta se envió el email"));
@@ -97,37 +103,48 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest req) {
-        if (repo.findByEmail(req.getEmail()).isPresent()) {
+        Optional<TipoUsuarioDTO> optOptional = iTipoUsuario.findByName("contador");
+        Optional<TipoUsuarioDTO> optTipoUsuario = iTipoUsuario.findByPublicId(optOptional.get().getPublicId());
+        if (repo.findByEmailAndTipoUsuarioIdAndActive(req.getEmail(), new ObjectId(optTipoUsuario.get().getId()), true).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "El email ya está registrado"));
         }
 
-        Usuario u = new Usuario();
-        u.setEmail(req.getEmail());
-        u.setNombre(req.getName());
-        u.setPassword(encoder.encode(req.getPassword()));
-        u.setTipoDocumento(req.getTipoDocumento().toLowerCase());
-        u.setDocumento(req.getNumeroDocumento());
-        u.setTelefono(req.getTelefono());
-        u.setActive(true);
+        Usuario usuario = new Usuario();
+        usuario.setEmail(req.getEmail());
+        usuario.setNombre(req.getNombre());
+        usuario.setPassword(encoder.encode(req.getPassword()));
+        usuario.setTipoDocumento(req.getTipoDocumento());
+        usuario.setDocumento(req.getNumeroDocumento());
+        usuario.setTelefono(req.getTelefono());
+        usuario.setActive(true);
 
-        String TIPO_USUARIO = req.getTipoUsuario();
+        String TIPO_USUARIO = "contador";
         ObjectId tipoUsuarioId = null;
 
         if (iTipoUsuario.findByName(TIPO_USUARIO.toLowerCase()).isPresent()) {
-            tipoUsuarioId = new ObjectId(iTipoUsuario.findByName(TIPO_USUARIO).get().getId());
+            TipoUsuarioDTO tipoUsuarioDTO = new TipoUsuarioDTO();
+            tipoUsuarioDTO = iTipoUsuario.findByName(TIPO_USUARIO).get();
+            tipoUsuarioId = new ObjectId(iTipoUsuario.findByPublicId(tipoUsuarioDTO.getPublicId()).get().getId());
+
         }else{
             TipoUsuarioDTO tipoUsuarioDTO = new TipoUsuarioDTO();
             tipoUsuarioDTO.setName(TIPO_USUARIO);
+
             iTipoUsuario.save(tipoUsuarioDTO);
-            tipoUsuarioId = new ObjectId(iTipoUsuario.findByName(TIPO_USUARIO).get().getId());
+
+            tipoUsuarioDTO = iTipoUsuario.findByName(TIPO_USUARIO).get();
+            tipoUsuarioId = new ObjectId(iTipoUsuario.findByPublicId(tipoUsuarioDTO.getPublicId()).get().getId());
+
         }
-        u.setTipoUsuarioId(tipoUsuarioId);
-        u.setEstado(true);
-        repo.save(u);
+        usuario.setTipoUsuarioId(tipoUsuarioId);
+        usuario.setEstado(true);
+
+        usuario.setPublicId(UUID.randomUUID().toString());
+        repo.save(usuario);
 
         return ResponseEntity.status(201).body(Map.of(
                 "message", "Usuario registrado exitosamente",
-                "email", u.getEmail()
+                "email", usuario.getEmail()
         ));
     }
 

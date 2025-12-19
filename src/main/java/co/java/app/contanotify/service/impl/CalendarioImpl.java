@@ -5,7 +5,9 @@ import co.java.app.contanotify.dto.CalendarioSimpleDTO;
 import co.java.app.contanotify.dto.FechaDTO;
 import co.java.app.contanotify.model.Calendario;
 import co.java.app.contanotify.model.Fecha;
+import co.java.app.contanotify.model.Obligacion;
 import co.java.app.contanotify.repository.CalendarioRepository;
+import co.java.app.contanotify.repository.ObligacionRepository;
 import co.java.app.contanotify.service.ICalendario;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +17,12 @@ import java.util.*;
 public class CalendarioImpl implements ICalendario {
 
     private final CalendarioRepository calendarioRepository;
+    private final ObligacionRepository obligacionRepository;
 
-    public CalendarioImpl(CalendarioRepository calendarioRepository) {
+    public CalendarioImpl(CalendarioRepository calendarioRepository,
+                          ObligacionRepository obligacionRepository) {
         this.calendarioRepository = calendarioRepository;
+        this.obligacionRepository = obligacionRepository;
     }
 
     @Override
@@ -52,8 +57,9 @@ public class CalendarioImpl implements ICalendario {
         return Optional.of(calendarioDTO) ;
     }
 
-    private List<Calendario> getCalendarios(String id) {
-        Optional<List<Calendario>> calendarios= calendarioRepository.findByObligacionId(id);
+    private List<Calendario> getCalendarios(String publicId) {
+        Optional<Obligacion> obligacion = obligacionRepository.findByPublicId(publicId);
+        Optional<List<Calendario>> calendarios= calendarioRepository.findByObligacionId(obligacion.get().getId());
         List<Calendario> calendario = calendarios.stream().findFirst().get();
         return calendario;
     }
@@ -67,7 +73,7 @@ public class CalendarioImpl implements ICalendario {
             return Optional.empty();
         }
 
-        calendarioDTO.setId(opt.get().getId());
+        calendarioDTO.setId(opt.get().getPublicId().toString());
         calendarioDTO.setNombre(opt.get().getNombre());
         calendarioDTO.setHasta(opt.get().getHasta());
         calendarioDTO.setObligacionId(opt.get().getObligacionId());
@@ -110,6 +116,7 @@ public class CalendarioImpl implements ICalendario {
 
         calendario.setFechas(fechas);
 
+        calendario.setPublicId(UUID.randomUUID().toString());
         calendarioRepository.save(calendario);
     }
 
@@ -123,7 +130,7 @@ public class CalendarioImpl implements ICalendario {
 
         for(Calendario calendario: calendarios){
             CalendarioSimpleDTO calendarioSimple = new CalendarioSimpleDTO();
-            calendarioSimple.setId(calendario.getId());
+            calendarioSimple.setId(calendario.getPublicId().toString());
             calendarioSimple.setNombre(calendario.getNombre());
 
             listCalendarios.add(calendarioSimple);

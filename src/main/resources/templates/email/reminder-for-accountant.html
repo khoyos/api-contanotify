@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seguimiento Tributario - ContaNotify</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f8;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #2c3e50;
+        }
+
+        .email-container {
+            max-width: 650px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #004e92 0%, #000428 100%);
+            padding: 35px 25px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .header p {
+            margin-top: 10px;
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 35px 30px;
+            line-height: 1.7;
+        }
+
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .alert-box {
+            background-color: #e8f0fe;
+            border-left: 4px solid #1565c0;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 25px 0;
+        }
+
+        .alert-box h2 {
+            margin: 0 0 10px 0;
+            color: #0d47a1;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .obligations-list {
+            background-color: #f9fafb;
+            border: 1px solid #dbe2ef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .obligations-title {
+            text-align: center;
+            font-weight: 700;
+            color: #004085;
+            margin-bottom: 15px;
+        }
+
+        /* Estilos base */
+        .obligation-item {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #0d6efd;
+            background: white;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Colores dinámicos */
+        .obligation-yellow {
+            background-color: #fff8e1;
+            border-left-color: #ffeb3b;
+        }
+
+        .obligation-orange {
+            background-color: #ffe0b2;
+            border-left-color: #ff9800;
+        }
+
+        .obligation-red {
+            background-color: #ffcdd2;
+            border-left-color: #f44336;
+        }
+
+        .obligation-date {
+            font-weight: 600;
+            color: #b71c1c;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 35px 0 15px 0;
+        }
+
+        .cta-button {
+            background-color: #004e92;
+            color: white;
+            text-decoration: none;
+            padding: 14px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            background-color: #1565c0;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            background: #000428;
+            color: #fff;
+            text-align: center;
+            padding: 25px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .footer strong {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 20px;
+            }
+
+            .content {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-container">
+    <div class="header">
+        <h1>Monitoreo de Obligación Tributaria</h1>
+        <p>Asesoría Contable Profesional - ContaNotify</p>
+    </div>
+
+    <div class="content">
+        <p class="greeting">
+            Estimado/a <strong th:text="${contadorNombre}">Nombre del Contador</strong> 👋
+        </p>
+
+        <p>
+            ContaNotify le recuerda que está próxima la fecha de vencimiento de una obligación tributaria de su cliente
+            <strong th:text="${clienteNombre}">Nombre del Cliente</strong>.
+        </p>
+
+        <p>
+            Mantener la puntualidad en esta gestión garantiza el cumplimiento normativo y refuerza la confianza con su cliente.
+        </p>
+
+        <div class="alert-box">
+            <h2>📅 Próxima Obligación</h2>
+        </div>
+
+        <div class="obligations-list">
+            <div class="obligations-title">Detalle de la obligación</div>
+
+            <!-- Tarjeta dinámica de UNA obligación -->
+            <div class="obligation-item" th:classappend="${colorClass}">
+
+                <div><strong>Declaración:</strong> <span th:text="${renta}">Retención en la Fuente</span></div>
+                <div><strong>Tipo:</strong> <span th:text="${pago}">Retención Mensual</span></div>
+                <div class="obligation-date"><strong>Fecha límite:</strong> <span th:text="${fecha}">15 de Febrero, 2025</span></div>
+
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <a href="#" class="cta-button"
+               onclick="event.preventDefault(); alert('Accediendo al panel del contador...');">
+                Ver Detalles en el Sistema
+            </a>
+        </div>
+
+        <p style="color: #555; font-size: 14px;">
+            <strong>Nota:</strong> Este recordatorio se genera automáticamente con base en la información registrada
+            en el sistema ContaNotify. Verifique siempre las fechas oficiales publicadas por la DIAN.
+        </p>
+    </div>
+
+    <div class="footer">
+        <strong>ContaNotify</strong>
+        Recordatorios Profesionales para Contadores Públicos<br />
+        📧 info@contanotify.com | ☎️ +57 (1) 345-6789<br />
+        Cartagena de Indias, Colombia
+    </div>
+</div>
+</body>
+</html>

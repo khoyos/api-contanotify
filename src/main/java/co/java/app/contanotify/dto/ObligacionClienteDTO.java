@@ -1,11 +1,9 @@
 package co.java.app.contanotify.dto;
 
-import org.bson.types.ObjectId;
-
 public class ObligacionClienteDTO {
 
     private String usuarioClienteId;
-    private String pagoId;
+    private String obligacionRentaId;
 
     public String getUsuarioClienteId() {
         return usuarioClienteId;
@@ -15,11 +13,11 @@ public class ObligacionClienteDTO {
         this.usuarioClienteId = usuarioClienteId;
     }
 
-    public String getPagoId() {
-        return pagoId;
+    public String getObligacionRentaId() {
+        return obligacionRentaId;
     }
 
-    public void setPagoId(String pagoId) {
-        this.pagoId = pagoId;
+    public void setObligacionRentaId(String obligacionRentaId) {
+        this.obligacionRentaId = obligacionRentaId;
     }
 }

@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UsuarioImpl implements IUsuario {
@@ -38,17 +38,28 @@ public class UsuarioImpl implements IUsuario {
 
     @Override
     public UsuarioDTO save(UsuarioDTO usuarioDTO) {
-        if (usuarioRepository.findByEmail(usuarioDTO.getEmail()).isPresent()) {
-            throw new RuntimeException("Error al acrear usuario");
+
+        if (usuarioRepository.findByTipoDocumentoAndDocumentoAndUsuarioContadorId(
+                usuarioDTO.getTipoDocumento(), usuarioDTO.getDocumento(), usuarioDTO.getUsuarioContadorId()).isPresent()) {
+            throw new RuntimeException("Ya existe un cliente con este documento");
         }
 
-        Usuario u = new Usuario();
-        u.setEmail(usuarioDTO.getEmail());
-        u.setNombre(usuarioDTO.getNombre());
-        u.setTipoDocumento(usuarioDTO.getTipoDocumento().toLowerCase());
-        u.setDocumento(usuarioDTO.getDocumento());
-        u.setTelefono(usuarioDTO.getTelefono());
-        u.setActive(true);
+        Optional<TipoUsuario> opt = tipoUsuarioRepository.findByName("cliente");
+        Optional<TipoUsuario> optTipoUsuario = tipoUsuarioRepository.findByPublicId(opt.get().getPublicId());
+
+        if (usuarioRepository.findByEmailAndTipoUsuarioIdAndActiveAndUsuarioContadorId(usuarioDTO.getEmail(), new ObjectId(optTipoUsuario.get().getId()), true, usuarioDTO.getUsuarioContadorId()).isPresent()) {
+            throw new RuntimeException("Ya existe un usuario con este email");
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setEmail(usuarioDTO.getEmail());
+        usuario.setNombre(usuarioDTO.getNombre());
+        usuario.setRazonSocial(usuarioDTO.getRazonSocial());
+        usuario.setTipoDocumento(usuarioDTO.getTipoDocumento().toLowerCase());
+        usuario.setDocumento(usuarioDTO.getDocumento());
+        usuario.setTelefono(usuarioDTO.getTelefono());
+        usuario.setUsuarioContadorId(usuarioDTO.getUsuarioContadorId());
+        usuario.setActive(true);
 
         String TIPO_USUARIO = "cliente";
         ObjectId tipoUsuarioId = null;
@@ -58,17 +69,22 @@ public class UsuarioImpl implements IUsuario {
         }else{
             TipoUsuario tipoUsuario = new TipoUsuario();
             tipoUsuario.setName(TIPO_USUARIO);
+
+            tipoUsuario.setPublicId(UUID.randomUUID().toString());
             tipoUsuarioRepository.save(tipoUsuario);
             tipoUsuarioId = new ObjectId(tipoUsuarioRepository.findByName(TIPO_USUARIO).get().getId());
         }
-        u.setTipoUsuarioId(tipoUsuarioId);
-        u.setEstado(true);
-        usuarioRepository.save(u);
+        usuario.setTipoUsuarioId(tipoUsuarioId);
+        usuario.setEstado(true);
+
+        usuario.setPublicId(UUID.randomUUID().toString());
+        usuarioRepository.save(usuario);
+
         return usuarioDTO;
     }
 
     @Override
-    public Page<UsuarioDTO> getAll(String nombre, String documento, String email, Pageable pageable) {
+    public Page<UsuarioDTO> getAll(String nombre, String documento, String email, Pageable pageable, String idContador) {
         Query query = new Query().with(pageable);
         List<Criteria> criterios = new ArrayList<>();
 
@@ -85,7 +101,7 @@ public class UsuarioImpl implements IUsuario {
 
         String id = tipoUsuarioRepository.findByName("cliente").get().getId();
         query.addCriteria(Criteria.where("tipoUsuarioId").is(new ObjectId(id)));
-
+        query.addCriteria(Criteria.where("usuarioContadorId").is(idContador));
         //Solo usuarios activos
         query.addCriteria(Criteria.where("active").is(true));
 
@@ -100,12 +116,13 @@ public class UsuarioImpl implements IUsuario {
         // Mapeo de entidad a DTO
         List<UsuarioDTO> dtos = usuarios.stream().map(usuario -> {
             UsuarioDTO dto = new UsuarioDTO();
-            dto.setId(usuario.getId());
+            dto.setId(usuario.getPublicId().toString());
             dto.setDocumento(usuario.getDocumento());
             dto.setNombre(usuario.getNombre());
             dto.setEmail(usuario.getEmail());
             dto.setTelefono(usuario.getTelefono());
             dto.setTipoDocumento(usuario.getTipoDocumento());
+            dto.setRazonSocial(usuario.getRazonSocial());
             return dto;
         }).toList();
 
@@ -121,7 +138,7 @@ public class UsuarioImpl implements IUsuario {
             throw new RuntimeException("Error al consultar el usuario");
         }
 
-        usuarioDTO.setId(usuario.get().getId());
+        usuarioDTO.setId(usuario.get().getPublicId().toString());
         usuarioDTO.setNombre(usuario.get().getNombre());
         usuarioDTO.setDocumento(usuario.get().getDocumento());
         usuarioDTO.setTelefono(usuario.get().getTelefono());
@@ -134,7 +151,7 @@ public class UsuarioImpl implements IUsuario {
     @Override
     public UsuarioDTO findById(String id) {
         UsuarioDTO usuarioDTO = new UsuarioDTO();
-        Optional<Usuario> usuario = usuarioRepository.findById(id);
+        Optional<Usuario> usuario = usuarioRepository.findByPublicId(id);
 
         if(usuario.isEmpty()){
             throw new RuntimeException("Error al consultar el usuario");
@@ -146,6 +163,7 @@ public class UsuarioImpl implements IUsuario {
         usuarioDTO.setTelefono(usuario.get().getTelefono());
         usuarioDTO.setEmail(usuario.get().getEmail());
         usuarioDTO.setTipoDocumento(usuario.get().getTipoDocumento());
+        usuarioDTO.setRazonSocial(usuario.get().getRazonSocial());
 
         return usuarioDTO;
     }
@@ -153,19 +171,32 @@ public class UsuarioImpl implements IUsuario {
     @Override
     public void update(UsuarioDTO usuarioDTO) {
         Usuario usuario = new Usuario();
-        usuario.setId(usuarioDTO.getId());
+
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByPublicId(usuarioDTO.getId());
+
+        if(usuarioOptional.isEmpty()){
+           throw new RuntimeException("Usuario invalido");
+        }
+        usuario = usuarioOptional.get();
+
+        usuario.setId(usuarioOptional.get().getId());
+        usuario.setPublicId(usuarioOptional.get().getPublicId());
         usuario.setNombre(usuarioDTO.getNombre());
         usuario.setDocumento(usuarioDTO.getDocumento());
         usuario.setTelefono(usuarioDTO.getTelefono());
         usuario.setEmail(usuarioDTO.getEmail());
         usuario.setTipoDocumento(usuarioDTO.getTipoDocumento());
+        usuario.setRazonSocial(usuarioDTO.getRazonSocial());
+
         usuario.setActive(true);
 
         ObjectId tipoUsuarioId = null;
 
-        if (tipoUsuarioRepository.findByName("cliente").isPresent()) {
-            tipoUsuarioId = new ObjectId(tipoUsuarioRepository.findByName("cliente").get().getId());
+        Optional<TipoUsuario> tipoUsuarioOptional = tipoUsuarioRepository.findByName("cliente");
+        if (!tipoUsuarioOptional.isEmpty()) {
+            tipoUsuarioId = new ObjectId(tipoUsuarioOptional.get().getId());
         }
+
         usuario.setTipoUsuarioId(tipoUsuarioId);
 
         usuarioRepository.save(usuario);
@@ -173,23 +204,14 @@ public class UsuarioImpl implements IUsuario {
 
     @Override
     public void delete(UsuarioDTO usuarioDTO) {
-        Usuario usuario = new Usuario();
-        usuario.setId(usuarioDTO.getId());
-        usuario.setNombre(usuarioDTO.getNombre());
-        usuario.setDocumento(usuarioDTO.getDocumento());
-        usuario.setTelefono(usuarioDTO.getTelefono());
-        usuario.setEmail(usuarioDTO.getEmail());
-        usuario.setTipoDocumento(usuarioDTO.getTipoDocumento());
+        Optional<Usuario> optUsuario = usuarioRepository.findByPublicId(usuarioDTO.getId());
 
-        ObjectId tipoUsuarioId = null;
-
-        if (tipoUsuarioRepository.findByName("cliente").isPresent()) {
-            tipoUsuarioId = new ObjectId(tipoUsuarioRepository.findByName("cliente").get().getId());
+        if(optUsuario.isEmpty()){
+            throw new RuntimeException("No pudo eliminar");
         }
-        usuario.setTipoUsuarioId(tipoUsuarioId);
 
-        usuario.setActive(false);
+        optUsuario.get().setActive(false);
 
-        usuarioRepository.save(usuario);
+        usuarioRepository.save(optUsuario.get());
     }
 }

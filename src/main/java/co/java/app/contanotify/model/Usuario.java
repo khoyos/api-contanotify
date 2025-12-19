@@ -10,6 +10,7 @@ public class Usuario {
 
     @Id
     private String id;
+    private String publicId;
     private String nombre;
     private String documento;
     private String email;
@@ -17,6 +18,7 @@ public class Usuario {
     private String telefono;
     private boolean estado;
     private ObjectId tipoUsuarioId;
+    private String usuarioContadorId;
     private String razonSocial;
     private String tipoDocumento;
     private boolean active;
@@ -142,11 +144,16 @@ public class Usuario {
 
     public void setTipoDocumento(String tipoDocumento) {this.tipoDocumento = tipoDocumento;}
 
-    public boolean isActive() {
-        return active;
-    }
+    public boolean isActive() { return active; }
 
-    public void setActive(boolean active) {
-        this.active = active;
-    }
+    public void setActive(boolean active) { this.active = active; }
+
+    public String getPublicId() { return publicId; }
+
+    public void setPublicId(String publicId) { this.publicId = publicId; }
+
+    public String getUsuarioContadorId() { return usuarioContadorId; }
+
+    public void setUsuarioContadorId(String usuarioContadorId) { this.usuarioContadorId = usuarioContadorId; }
+
 }
