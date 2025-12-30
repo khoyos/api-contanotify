@@ -31,4 +31,9 @@ public class ActiveMQConfig {
     public Queue reminderStatusClientQueue() {
         return new ActiveMQQueue("reminder-status-client");
     }
+
+    @Bean
+    public Queue forgotPasswordQueue() {
+        return new ActiveMQQueue("forgot-password");
+    }
 }

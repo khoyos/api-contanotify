@@ -17,6 +17,7 @@ public class ReminderProducer {
     private final Queue reminder1DayQueue;
     private final Queue reminderTodayQueue;
     private final Queue reminderStatusClientQueue;
+    private final Queue forgotPasswordQueue;
     private final DiasAlertaProperties diasAlertaProperties;
 
     public ReminderProducer(JmsTemplate jmsTemplate,
@@ -25,6 +26,7 @@ public class ReminderProducer {
                             Queue reminder1DayQueue,
                             Queue reminderTodayQueue,
                             Queue reminderStatusClientQueue,
+                            Queue forgotPasswordQueue,
                             DiasAlertaProperties diasAlertaProperties) {
         this.jmsTemplate = jmsTemplate;
         this.reminder5DaysQueue = reminder5DaysQueue;
@@ -32,6 +34,7 @@ public class ReminderProducer {
         this.reminder1DayQueue = reminder1DayQueue;
         this.reminderTodayQueue = reminderTodayQueue;
         this.reminderStatusClientQueue = reminderStatusClientQueue;
+        this.forgotPasswordQueue = forgotPasswordQueue;
         this.diasAlertaProperties = diasAlertaProperties;
     }
 
@@ -51,6 +54,12 @@ public class ReminderProducer {
     public void sendReminderClient(Map<String,Object> payload) {
         System.out.println("* sendReminder cliente");
         jmsTemplate.convertAndSend(reminderStatusClientQueue, payload.toString());
+
+    }
+
+    public void sendForgotPassowrdClient(Map<String,Object> payload) {
+        System.out.println("* send forgot password cliente");
+        jmsTemplate.convertAndSend(forgotPasswordQueue, payload.toString());
 
     }
 }

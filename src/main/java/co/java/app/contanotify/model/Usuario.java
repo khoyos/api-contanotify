@@ -21,6 +21,8 @@ public class Usuario {
     private String usuarioContadorId;
     private String razonSocial;
     private String tipoDocumento;
+    private String subscriptionId;
+    private boolean block;
     private boolean active;
 
     // bloqueo/seguridad
@@ -156,4 +158,15 @@ public class Usuario {
 
     public void setUsuarioContadorId(String usuarioContadorId) { this.usuarioContadorId = usuarioContadorId; }
 
+    public String getSubscriptionId() { return subscriptionId; }
+
+    public void setSubscriptionId(String subscriptionId) { this.subscriptionId = subscriptionId; }
+
+    public boolean isBlock() {
+        return block;
+    }
+
+    public void setBlock(boolean block) {
+        this.block = block;
+    }
 }

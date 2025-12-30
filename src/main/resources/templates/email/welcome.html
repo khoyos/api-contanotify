@@ -1,14 +1,196 @@
-<html xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"/>
-    <title>Bienvenido</title>
-</head>
-<body>
-<h2>¡Hola <span th:text="${name}">Usuario</span>! 🎉</h2>
-<p>Gracias por registrarte en <b>Contanotify</b>.</p>
-<p>Tu correo de registro es: <span th:text="${email}">example@email.com</span></p>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bienvenido a ContaNotify</title>
 
-<hr/>
-<small>© 2025 Contanotify</small>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f8;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #2c3e50;
+        }
+
+        .email-container {
+            max-width: 650px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #004e92 0%, #000428 100%);
+            padding: 35px 25px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .header p {
+            margin-top: 10px;
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 35px 30px;
+            line-height: 1.7;
+        }
+
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .highlight-box {
+            background-color: #e8f0fe;
+            border-left: 4px solid #1565c0;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 25px 0;
+        }
+
+        .highlight-box h2 {
+            margin: 0 0 10px 0;
+            color: #0d47a1;
+            font-size: 18px;
+        }
+
+        .features-list {
+            background-color: #f9fafb;
+            border: 1px solid #dbe2ef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .feature-item {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            background: white;
+            border-left: 4px solid #0d6efd;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 35px 0 15px 0;
+        }
+
+        .cta-button {
+            background-color: #004e92;
+            color: white;
+            text-decoration: none;
+            padding: 14px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            background-color: #1565c0;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            background: #000428;
+            color: #fff;
+            text-align: center;
+            padding: 25px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .footer strong {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 20px;
+            }
+
+            .content {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>¡Bienvenido a ContaNotify! 🎉</h1>
+        <p>Gestión tributaria inteligente y oportuna</p>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+        <p class="greeting">
+            Hola <strong th:text="${nombreUsuario}">Usuario</strong> 👋
+        </p>
+
+        <p>
+            Nos alegra darle la bienvenida a <strong>ContaNotify</strong>.
+            Su cuenta ha sido creada exitosamente y ya puede comenzar a gestionar
+            sus obligaciones tributarias de forma segura y organizada.
+        </p>
+
+        <div class="highlight-box">
+            <h2>🚀 ¿Qué puede hacer ahora?</h2>
+            <p>
+                Como <strong th:text="${rol}">usuario</strong> de ContaNotify, tendrá acceso a herramientas diseñadas
+                para facilitar el cumplimiento normativo y mejorar su productividad.
+            </p>
+        </div>
+
+        <div class="features-list">
+            <div class="feature-item">📅 Recordatorios automáticos de obligaciones tributarias</div>
+            <div class="feature-item">🔔 Notificaciones oportunas y confiables</div>
+            <div class="feature-item">📊 Seguimiento organizado de clientes y responsabilidades</div>
+            <div class="feature-item">🔐 Acceso seguro a su información</div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <a th:href="${loginLink}" class="cta-button">
+                Ingresar a ContaNotify
+            </a>
+        </div>
+
+        <p style="font-size: 14px; color: #555; margin-top: 25px;">
+            Si necesita ayuda o tiene alguna inquietud, nuestro equipo de soporte estará
+            encantado de asistirle.
+        </p>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <strong>ContaNotify</strong>
+        Plataforma de Gestión y Recordatorios Tributarios<br />
+        📧 info@contanotify.com | ☎️ +57 (1) 345-6789<br />
+        Cartagena de Indias, Colombia
+    </div>
+
+</div>
 </body>
 </html>

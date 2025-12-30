@@ -1,13 +1,19 @@
 package co.java.app.contanotify.controller;
 
 import co.java.app.contanotify.dto.*;
+import co.java.app.contanotify.enums.SubscriptionPlan;
+import co.java.app.contanotify.enums.SubscriptionStatus;
+import co.java.app.contanotify.model.Subscription;
 import co.java.app.contanotify.model.TipoUsuario;
 import co.java.app.contanotify.model.Usuario;
+import co.java.app.contanotify.repository.SubscriptionRepository;
 import co.java.app.contanotify.repository.UsuarioRepository;
 import co.java.app.contanotify.service.ITipoUsuario;
 import co.java.app.contanotify.service.impl.EmailServiceImpl;
+import co.java.app.contanotify.service.impl.ReminderProducer;
 import co.java.app.contanotify.service.impl.TipoUsuarioImpl;
 import co.java.app.contanotify.service.impl.UserServiceImpl;
+import co.java.app.contanotify.util.FechaLegible;
 import co.java.app.contanotify.util.JwtUtil;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
@@ -16,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -29,14 +36,22 @@ public class AuthController {
     private final PasswordEncoder encoder;
     private final JwtUtil jwtUtil;
     private final UserServiceImpl userService; // contine recordFailedAttempt/onSuccessfulLogin
-    private final EmailServiceImpl emailService;
     private final ITipoUsuario iTipoUsuario;
+    private final SubscriptionRepository subscriptionRepository;
+    private final ReminderProducer reminderProducer;
 
-    public AuthController(UsuarioRepository repo, PasswordEncoder encoder, JwtUtil jwtUtil,
-                          UserServiceImpl userService, EmailServiceImpl emailService, TipoUsuarioImpl tipoUsuarioImpl) {
+    public AuthController(UsuarioRepository repo,
+                          PasswordEncoder encoder,
+                          JwtUtil jwtUtil,
+                          UserServiceImpl userService,
+                          TipoUsuarioImpl tipoUsuarioImpl,
+                          SubscriptionRepository subscriptionRepository,
+                          ReminderProducer reminderProducer) {
         this.repo = repo; this.encoder = encoder; this.jwtUtil = jwtUtil;
-        this.userService = userService; this.emailService = emailService;
+        this.userService = userService;
         this.iTipoUsuario = tipoUsuarioImpl;
+        this.subscriptionRepository = subscriptionRepository;
+        this.reminderProducer = reminderProducer;
     }
 
     @PostMapping("/login")
@@ -80,6 +95,20 @@ public class AuthController {
         u.setResetPasswordExpiry(Instant.now().plusSeconds(3600)); // 1 hora
         repo.save(u);
 
+
+        Map<String, Object> request = new HashMap<>();
+
+        request.put("to", u.getEmail());
+        request.put("clienteNombre", u.getNombre());
+        // TODO: IMPORTANTE LINK hay que colocar esta variable como propertie para toda la applicación
+        String frontendUrl = "http://localhost:5173";
+        String resetLink = frontendUrl + "/reset-password?token=" + token;
+        request.put("resetLink", resetLink);
+        request.put("template", "reset-password");
+        request.put("expiracion", "1 hora");
+
+        reminderProducer.sendForgotPassowrdClient(request);
+
         return ResponseEntity.ok(Map.of("message","Si existe una cuenta se envió el email"));
     }
 
@@ -89,7 +118,8 @@ public class AuthController {
         if (uOpt.isEmpty()) return ResponseEntity.badRequest().body(Map.of("error","Token inválido"));
         Usuario u = uOpt.get();
         if (u.getResetPasswordExpiry() == null || Instant.now().isAfter(u.getResetPasswordExpiry())) {
-            return ResponseEntity.badRequest().body(Map.of("error","Token expirado"));
+            return ResponseEntity.ok(Map.of("message","Error",
+                    "sucess",true));
         }
         u.setPassword(encoder.encode(req.getNewPassword()));
         u.setResetPasswordToken(null);
@@ -98,11 +128,12 @@ public class AuthController {
         u.setBloqueo(0);
         u.setLockUntil(null);
         repo.save(u);
-        return ResponseEntity.ok(Map.of("message","Contraseña actualizada"));
+        return ResponseEntity.ok(Map.of("message","Contraseña actualizada",
+                "sucess",true));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest req) {
+        public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest req) {
         Optional<TipoUsuarioDTO> optOptional = iTipoUsuario.findByName("contador");
         Optional<TipoUsuarioDTO> optTipoUsuario = iTipoUsuario.findByPublicId(optOptional.get().getPublicId());
         if (repo.findByEmailAndTipoUsuarioIdAndActive(req.getEmail(), new ObjectId(optTipoUsuario.get().getId()), true).isPresent()) {
@@ -139,13 +170,45 @@ public class AuthController {
         usuario.setTipoUsuarioId(tipoUsuarioId);
         usuario.setEstado(true);
 
+        // registra subscription
+        Subscription subscription = new Subscription();
+
+        subscription.setPlan(SubscriptionPlan.FREE_TRIAL);
+        subscription.setStatus(SubscriptionStatus.TRIAL);
+        subscription.setTrialEndDate(LocalDate.now().plusDays(7));
+        subscription.setEndDate(LocalDate.now().plusDays(7));
+        subscription.setPublicId(UUID.randomUUID().toString());
+
+        subscription = subscriptionRepository.save(subscription);
+
+        usuario.setSubscriptionId(subscription.getPublicId());
+
         usuario.setPublicId(UUID.randomUUID().toString());
         repo.save(usuario);
 
         return ResponseEntity.status(201).body(Map.of(
                 "message", "Usuario registrado exitosamente",
-                "email", usuario.getEmail()
+                "email", usuario.getEmail(),
+                "subscription", Map.of(
+                        "status", subscription.getStatus(),
+                        "endDate", subscription.getEndDate())
         ));
+    }
+
+    @PostMapping("/me")
+    public ResponseEntity<?> getMe(@RequestBody @Valid RegisterRequest req) {
+        Optional<TipoUsuarioDTO> optOptional = iTipoUsuario.findByName("contador");
+        Optional<TipoUsuarioDTO> optTipoUsuario = iTipoUsuario.findByPublicId(optOptional.get().getPublicId());
+        var userOpt = repo.findByEmailAndTipoUsuarioIdAndActive(req.getEmail(), new ObjectId(optTipoUsuario.get().getId()), true);
+        if (userOpt.isEmpty()) return ResponseEntity.status(401).body(Map.of("error","No sé encontro usuario"));
+        Optional<Subscription> subscription = subscriptionRepository.findByPublicId(userOpt.get().getSubscriptionId());
+        Usuario user = userOpt.get();
+        return ResponseEntity.ok(Map.of(
+                "email", user.getEmail(),
+                "subscription", Map.of(
+                        "status", subscription.get().getStatus()),
+                        "endDate", subscription.get().getEndDate())
+        );
     }
 
 }

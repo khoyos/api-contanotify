@@ -40,5 +40,8 @@ dias:
     media: ${DIAS_ALERTA_MEDIA}
     hoy: ${DIAS_ALERTA_HOY}
 
+mercadopago:
+  access-token: ${MP_ACCESS_TOKEN}
+
 server:
   port: ${SERVER_PORT}

@@ -44,7 +44,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of(
                 "http://srv1069432.hstgr.cloud",
                 "http://contanotify.com",
-                "https://contanotify.com"
+                "https://contanotify.com",
+                "http://localhost:5173"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

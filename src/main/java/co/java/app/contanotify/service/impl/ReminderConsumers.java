@@ -51,6 +51,13 @@ public class ReminderConsumers {
         sendEmailClient(map);
     }
 
+    @JmsListener(destination = "forgot-password")
+    public void processForgotPassword(String payload) {
+        System.out.println("[Hoy] Enviando email cambio de password contador: " + payload.replace("{","").replace("}",""));
+        Map<String, String> map = getStringToMap(payload.replace("{","").replace("}",""));
+        sendEmailForgotPassword(map);
+    }
+
     private void sendEmailAccountant(Map<String,String> payload){
         System.out.println("payload: "+ payload);
         try {
@@ -89,6 +96,21 @@ public class ReminderConsumers {
         }
     }
 
+    private void sendEmailForgotPassword(Map<String,String> payload){
+        System.out.println("payload: "+ payload);
+        try {
+
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("clienteNombre",payload.get("clienteNombre"));
+            variables.put("resetLink", payload.get("resetLink"));
+            variables.put("expiracion", payload.get("expiracion"));
+
+            emailSender.sendHtmlEmail(payload.get("to"),"Restablecer Contraseña","reset-password",variables);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static Map<String, String> getStringToMap(String payload) {
         String[] keyValuePairs = payload.split(",");
         Map<String, String> map = new HashMap<>();
@@ -98,6 +120,12 @@ public class ReminderConsumers {
                 String key = keyValue[0].trim(); // Trim whitespace
                 String value = keyValue[1].trim(); // Trim whitespace
                 map.put(key, value);
+            }
+            if(keyValue.length == 3){
+                String key = keyValue[0].trim(); // Trim whitespace
+                String value = keyValue[1].trim();
+                String token = keyValue[2].trim();
+                map.put(key, value+"="+token);// Trim whitespace
             }
         }
         System.out.println(map);
