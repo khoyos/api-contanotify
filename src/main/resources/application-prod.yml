@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: contanotify-prod
+
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI}
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USER}
+    password: ${EMAIL_PASS_KEY}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            strust: smtp.gmail.com
+        debug: true
+        transport:
+          protocol: smtp
+
+  activemq:
+    broker-url: ${ACTIVEMQ_BROKER_URL}
+    user: ${USER_ACTIVE_MQ}
+    password: ${PASSWORD_ACTIVE_MQ}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS}
+
+dias:
+  alerta:
+    urgente: ${DIAS_ALERTA_URGENTE}
+    alta: ${DIAS_ALERTA_ALTA}
+    media: ${DIAS_ALERTA_MEDIA}
+    hoy: ${DIAS_ALERTA_HOY}
+
+app:
+  url:
+    external-frotend: ${URL_EXTERNA_FROTEND}
+    mercado-pago-api: ${URL_MP_API}
+
+mercadopago:
+  access-token: ${MP_ACCESS_TOKEN}
+
+server:
+  port: ${SERVER_PORT}

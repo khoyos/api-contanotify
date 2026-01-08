@@ -19,9 +19,12 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
+    private final PropertiesConfig propertiesConfig;
 
-    public SecurityConfig(JwtTokenFilter jwtTokenFilter) {
+    public SecurityConfig(JwtTokenFilter jwtTokenFilter,
+                          PropertiesConfig propertiesConfig) {
         this.jwtTokenFilter = jwtTokenFilter;
+        this.propertiesConfig = propertiesConfig;
     }
 
     @Bean
@@ -43,9 +46,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://srv1069432.hstgr.cloud",
-                "http://contanotify.com",
-                "https://contanotify.com",
-                "http://localhost:5173"
+                propertiesConfig.getUrlFrotendPropertie()
+
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

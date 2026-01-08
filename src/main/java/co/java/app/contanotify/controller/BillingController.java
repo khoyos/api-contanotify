@@ -1,5 +1,6 @@
 package co.java.app.contanotify.controller;
 
+import co.java.app.contanotify.config.PropertiesConfig;
 import co.java.app.contanotify.dto.PlanDTO;
 import co.java.app.contanotify.enums.SubscriptionPlan;
 import co.java.app.contanotify.enums.SubscriptionStatus;
@@ -33,20 +34,23 @@ public class BillingController {
 
     private UsuarioRepository usuarioRepository;
     private SubscriptionRepository subscriptionRepository;
+    private PropertiesConfig propertiesConfig;
 
     public BillingController(UsuarioRepository usuarioRepository,
-                             SubscriptionRepository subscriptionRepository) {
+                             SubscriptionRepository subscriptionRepository,
+                             PropertiesConfig propertiesConfig) {
         this.prices = prices;
         this.usuarioRepository = usuarioRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.propertiesConfig = propertiesConfig;
     }
 
     @PostMapping("/pay")
     public ResponseEntity createPayment(@AuthenticationPrincipal Usuario user,
                                         @RequestParam SubscriptionPlan plan) throws MPException, MPApiException {
 
-        String FRONT_URL = "http://localhost:5173/";
-        String API_URL = "https://localhost:3000";
+        String FRONT_URL = propertiesConfig.getUrlFrotendPropertie();
+        String API_URL = propertiesConfig.getUrlMercadoPagoApi();
 
         PreferenceItemRequest item =
                 PreferenceItemRequest.builder()
@@ -107,7 +111,7 @@ public class BillingController {
 
 
     public Map<SubscriptionPlan, BigDecimal> prices = Map.of(
-            BASIC, new BigDecimal("29000")//,
+            BASIC, new BigDecimal("35000")//,
             //PRO, new BigDecimal("59000")
     );
 
