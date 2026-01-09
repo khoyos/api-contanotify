@@ -33,7 +33,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ activa CORS global
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // públicos
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/billing/**").permitAll()
+                        .requestMatchers("/webhooks/mercadopago").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
@@ -45,7 +47,6 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
-                "http://srv1069432.hstgr.cloud",
                 propertiesConfig.getUrlFrotendPropertie()
 
         ));

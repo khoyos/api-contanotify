@@ -7,6 +7,7 @@ public class RegisterRequest {
     private String tipoDocumento;
     private String numeroDocumento;
     private String telefono;
+    private String plan;
 
     public String getNombre() { return nombre; }
 
@@ -32,4 +33,7 @@ public class RegisterRequest {
 
     public void setTelefono(String telefono) { this.telefono = telefono; }
 
+    public String getPlan() { return plan; }
+
+    public void setPlan(String plan) { this.plan = plan; }
 }

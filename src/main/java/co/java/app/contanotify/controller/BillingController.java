@@ -8,6 +8,7 @@ import co.java.app.contanotify.model.Subscription;
 import co.java.app.contanotify.model.Usuario;
 import co.java.app.contanotify.repository.SubscriptionRepository;
 import co.java.app.contanotify.repository.UsuarioRepository;
+import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
 import com.mercadopago.client.preference.PreferenceClient;
@@ -46,39 +47,64 @@ public class BillingController {
     }
 
     @PostMapping("/pay")
-    public ResponseEntity createPayment(@AuthenticationPrincipal Usuario user,
-                                        @RequestParam SubscriptionPlan plan) throws MPException, MPApiException {
+    public ResponseEntity<?> createPayment(@RequestParam String user,
+                                           @RequestParam String planCode)
+            throws MPException {
+
+        BigDecimal price = prices.get(planCode);
+        if (price == null) {
+            return ResponseEntity.badRequest().body("Plan inválido");
+        }
 
         String FRONT_URL = propertiesConfig.getUrlFrotendPropertie();
-        String API_URL = propertiesConfig.getUrlMercadoPagoApi();
+        String BACKEND_URL = "http://localhost:8080";
+
+        MercadoPagoConfig.setAccessToken(propertiesConfig.getMercadopagoAccessToken());
+        System.out.println("PLAN CODE: " + planCode);
+        System.out.println("PRICE: " + prices.get(planCode));
 
         PreferenceItemRequest item =
                 PreferenceItemRequest.builder()
-                        .title("Suscripción " + plan.name())
+                        .title("Suscripción " + planCode)
                         .quantity(1)
-                        .unitPrice(prices.get(plan))
+                        .unitPrice(price)
                         .currencyId("COP")
                         .build();
 
-        PreferenceRequest preference =
+        PreferenceRequest.PreferenceRequestBuilder preferenceBuilder =
                 PreferenceRequest.builder()
                         .items(List.of(item))
-                        .externalReference(user.getPublicId())
-                        .backUrls(PreferenceBackUrlsRequest.builder()
-                                .success(FRONT_URL + "/success")
-                                .failure(FRONT_URL + "/failure")
-                                .pending(FRONT_URL + "/pending")
-                                .build()
+                        .externalReference(user)
+                        .backUrls(
+                                PreferenceBackUrlsRequest.builder()
+                                        .success(FRONT_URL + "/success")
+                                        .failure(FRONT_URL + "/failure")
+                                        .pending(FRONT_URL + "/pending")
+                                        .build()
                         )
-                        .notificationUrl(API_URL + "/webhooks/mercadopago")
-                        .build();
+                        .notificationUrl(BACKEND_URL + "/webhooks/mercadopago");
 
-        Preference result = new PreferenceClient().create(preference);
 
-        return ResponseEntity.status(201).body(Map.of(
-                "paymentResponse", result.getInitPoint()
-        ));
+        if (propertiesConfig.isProduction()) {
+            preferenceBuilder.autoReturn("approved");
+        }
+
+        PreferenceRequest preference = preferenceBuilder.build();
+
+        try {
+            Preference result = new PreferenceClient().create(preference);
+            return ResponseEntity.status(201).body(
+                    Map.of("url", result.getInitPoint())
+            );
+        } catch (MPApiException e) {
+            System.out.println("STATUS: " + e.getStatusCode());
+            System.out.println("RESPONSE: " + e.getApiResponse().getContent());
+            System.out.println("FRONT_URL = " + FRONT_URL);
+            System.out.println("SUCCESS_URL = " + FRONT_URL + "/success");
+            return ResponseEntity.status(500).body(e.getApiResponse().getContent());
+        }
     }
+
 
     @PostMapping("/webhooks/mercadopago")
     public ResponseEntity<Void> webhook(@RequestParam String type, @RequestParam String data_id) throws MPException, MPApiException {
@@ -108,10 +134,10 @@ public class BillingController {
         }
     }
 
-
-
-    public Map<SubscriptionPlan, BigDecimal> prices = Map.of(
-            BASIC, new BigDecimal("35000")//,
+    public Map<String, BigDecimal> prices = Map.of(
+            FREE_TRIAL.name(), new BigDecimal("0"),
+            PRO.name(), new BigDecimal("29999"),
+            PREMIUM.name(), new BigDecimal("59999")
             //PRO, new BigDecimal("59000")
     );
 
@@ -119,8 +145,8 @@ public class BillingController {
     public List<PlanDTO> getPlans() {
         return List.of(
                 new PlanDTO(FREE_TRIAL.name(), "Plan Básico", new BigDecimal("0")),
-                new PlanDTO(BASIC.name(), "Plan Básico", new BigDecimal("29000")),
-                new PlanDTO(PRO.name(), "Plan Pro", new BigDecimal("59000"))
+                new PlanDTO(PRO.name(), "Plan Pro", new BigDecimal("29000")),
+                new PlanDTO(PREMIUM.name(), "Plan Premium", new BigDecimal("59000"))
         );
     }
 

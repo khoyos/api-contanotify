@@ -173,10 +173,23 @@ public class AuthController {
         // registra subscription
         Subscription subscription = new Subscription();
 
-        subscription.setPlan(SubscriptionPlan.FREE_TRIAL);
-        subscription.setStatus(SubscriptionStatus.TRIAL);
-        subscription.setTrialEndDate(LocalDate.now().plusDays(7));
-        subscription.setEndDate(LocalDate.now().plusDays(7));
+        String PLAN_SUBSCRIPTION = req.getPlan();
+
+        subscription.setPlan(SubscriptionPlan.valueOf(PLAN_SUBSCRIPTION));
+
+        if(PLAN_SUBSCRIPTION.equals(SubscriptionPlan.BASIC.toString())){
+            subscription.setStatus(SubscriptionStatus.TRIAL);
+            subscription.setTrialEndDate(LocalDate.now().plusDays(7));
+            subscription.setEndDate(LocalDate.now().plusDays(7));
+        }
+
+        if(PLAN_SUBSCRIPTION.equals(SubscriptionPlan.PRO.name())||
+                PLAN_SUBSCRIPTION.equals(SubscriptionPlan.PREMIUM.name())){
+            subscription.setStatus(SubscriptionStatus.ACTIVE);
+            subscription.setStartDate(LocalDate.now());
+            subscription.setEndDate(LocalDate.now().plusDays(30));
+        }
+
         subscription.setPublicId(UUID.randomUUID().toString());
 
         subscription = subscriptionRepository.save(subscription);
@@ -189,6 +202,7 @@ public class AuthController {
         return ResponseEntity.status(201).body(Map.of(
                 "message", "Usuario registrado exitosamente",
                 "email", usuario.getEmail(),
+                "user", usuario.getPublicId(),
                 "subscription", Map.of(
                         "status", subscription.getStatus(),
                         "endDate", subscription.getEndDate())
